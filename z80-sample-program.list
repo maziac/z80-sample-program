@@ -1,0 +1,244 @@
+# File main.asm
+0000			;=========================================================================== 
+0000			; main.asm 
+0000			;=========================================================================== 
+0000			 
+0000			 
+0000			    ORG 0x4000 
+4000 00...		    defs 0x6000 - $    ; move after screen area 
+6000			;=========================================================================== 
+6000			; Include modules 
+6000			;=========================================================================== 
+6000			include "utilities.asm" 
+6000			;=========================================================================== 
+6000			; utilities.asm 
+6000			; Submodule for some common routines. 
+6000			;=========================================================================== 
+6000			 
+6000			; Some constants 
+6000			PAUSE_TIME:     equ 5000   ; 0.5 sec 
+6000			 
+6000			 
+6000			; Pauses for a while. 
+6000			; de: wait time, ca: de*0.1ms 
+6000			pause: 
+6000 f5				push af 
+6001 c5				push bc 
+6002			 
+6002			pause_loop_l2: 
+6002 06 1a			ld b,26 
+6004			pause_loop_l1: 
+6004 10 fe			djnz pause_loop_l1 ; 1 cycle should be roughly 100us=0.1ms 
+6006			 
+6006 1b				dec de 
+6007 7a				ld a,d 
+6008 b3				or e 
+6009 20 f7			jr nz,pause_loop_l2 
+600b			 
+600b c1				pop bc 
+600c f1				pop af 
+600d c9				ret 
+# End of file utilities.asm
+600e			include "fill.asm" 
+600e			;=========================================================================== 
+600e			; fill.asm 
+600e			; Submodule with memory fill routines. 
+600e			;=========================================================================== 
+600e			 
+600e			; Some constants 
+600e			BCKG_LINE_SIZE:  equ     32 
+600e			 
+600e			; Colors  
+600e			BLACK:          equ 0<<3 
+600e			BLUE:           equ 1<<3 
+600e			RED:            equ 2<<3 
+600e			MAGENTA:        equ 3<<3 
+600e			GREEN:          equ 4<<3 
+600e			CYAN:           equ 5<<3 
+600e			YELLOW:         equ 6<<3 
+600e			WHITE:          equ 7<<3 
+600e			 
+600e			 
+600e			; Fills a memory area with a certain value. 
+600e			; a = contains the fill value. 
+600e			; hl = address to fill 
+600e			; bc = size 
+600e			fill_memory: 
+600e 77			    ld (hl),a 
+600f 5d			    ld e,l 
+6010 54			    ld d,h 
+6011 13			    inc de 
+6012 0b			    dec bc 
+6013 ed b0		    ldir 
+6015 c9			    ret	 
+6016			 
+6016			 
+6016			; Fills a background line with a color.  
+6016			; a = color 
+6016			; de = points to background screen 
+6016			fill_bckg_line: 
+6016 01 20 00		    ld bc,BCKG_LINE_SIZE 
+6019 6b			    ld l,e 
+601a 62			    ld h,d 
+601b cd 0e 60		    call fill_memory 
+601e			    ; check that destination address is still in screen background  
+601e 21 00 5b		    ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE 
+6021 b7			    or a    ; clear carry 
+6022 ed 52		    sbc hl,de ; compare  
+6024 f0			    ret p 
+6025			    ; ld start address 
+6025 11 00 58		    ld de,COLOR_SCREEN  
+6028 c9			    ret 
+6029			 
+6029			 
+6029			; Increments the fill_colors_ptr and resets it if necessary. 
+6029			inc_fill_colors_ptr: 
+6029 2a 3e 60		    ld hl,(fill_colors_ptr) 
+602c 23			    inc hl 
+602d 22 3e 60		    ld (fill_colors_ptr),hl  
+6030			     
+6030			    ; check if out of range 
+6030 01 45 60		    ld bc,fill_colors_end 
+6033 b7			    or a    ; clear carry 
+6034 ed 42		    sbc hl,bc ; compare  
+6036 f8			    ret m 
+6037			     
+6037			    ; reset 
+6037 21 40 60		    ld hl,fill_colors 
+603a 22 3e 60		    ld (fill_colors_ptr),hl 
+603d c9			    ret 
+603e			 
+603e			 
+603e			; Pointer to fill colors. 
+603e 00 00		fill_colors_ptr:    defw 0 
+6040			 
+6040			; Contains the colors for the lines. Each entry represnts the color for one line. 
+6040			fill_colors: 
+6040 10 30 08 20 18	    defb RED, YELLOW, BLUE, GREEN, MAGENTA 
+6045			fill_colors_end: 
+6045			     
+6045			 
+# End of file fill.asm
+6045			include "clearscreen.asm" 
+6045			;=========================================================================== 
+6045			; clearscreen.asm 
+6045			; Submodule to clear the entire screen. 
+6045			;=========================================================================== 
+6045			 
+6045			; Some constants 
+6045			SCREEN:         equ 0x4000 
+6045			SCREEN_SIZE:    equ 0x1800 
+6045			 
+6045			COLOR_SCREEN:       equ 0x5800 
+6045			COLOR_SCREEN_SIZE:  equ 0x0300 
+6045			 
+6045			 
+6045			; Clears the screen 
+6045			clear_screen: 
+6045 af			    xor a 
+6046 01 00 18		    ld bc,SCREEN_SIZE 
+6049 21 00 40		    ld hl,SCREEN 
+604c cd 0e 60		    call fill_memory 
+604f c9			    ret	 
+6050			     
+6050			 
+6050			; Clears the background 
+6050			clear_backg: 
+6050 af			    xor a 
+6051 cd 55 60		    call fill_backg 
+6054 c9			    ret	 
+6055			 
+6055			 
+6055			; Fills the background with fore and background color. 
+6055			; a contains the fill color. 
+6055			fill_backg: 
+6055 01 00 03		    ld bc,COLOR_SCREEN_SIZE 
+6058 21 00 58		    ld hl,COLOR_SCREEN 
+605b cd 0e 60		    call fill_memory 
+605e c9			    ret	 
+605f			     
+605f			 
+605f			     
+# End of file clearscreen.asm
+605f			 
+605f			 
+605f			 
+605f			;=========================================================================== 
+605f			; main routine - the code execution starts here. 
+605f			; Sets up the new interrupt routine, the memory 
+605f			; banks and jumps to the start loop. 
+605f			;=========================================================================== 
+605f			main: 
+605f			    ; Disable interrupts 
+605f f3			    di 
+6060			  
+6060			    ; Setup stack 
+6060 31 4f 61		    ld sp,stack_top 
+6063			 
+6063			if 0 
+6063			    ld b,1 
+6063			start_wait_loop: 
+6063			    ld de,PAUSE_TIME 
+6063			    call pause 
+6063			    nop 
+6063			    djnz start_wait_loop 
+6063			endif 
+6063			  
+6063			    ; CLS 
+6063 cd 45 60		    call clear_screen 
+6066 cd 50 60		    call clear_backg 
+6069			 
+6069			    ; Init 
+6069 21 40 60		    ld hl,fill_colors 
+606c 22 3e 60		    ld (fill_colors_ptr),hl 
+606f 11 00 58		    ld de,COLOR_SCREEN 
+6072			     
+6072			main_loop: 
+6072			    ; fill line with color 
+6072 2a 3e 60		    ld hl,(fill_colors_ptr) 
+6075 7e			    ld a,(hl) 
+6076 cd 16 60		    call fill_bckg_line 
+6079			     
+6079			    ; break 
+6079 d5			    push de 
+607a 11 88 13		    ld de,PAUSE_TIME 
+607d cd 00 60		    call pause 
+6080 d1			    pop de 
+6081			 
+6081			    ; next line 
+6081 cd 29 60		    call inc_fill_colors_ptr 
+6084			 
+6084 18 ec		    jr main_loop 
+6086			 
+6086			 
+6086			 
+6086			;=========================================================================== 
+6086			; Stack. The stack mustn't be in the area 0xC000-0xFFFF. 
+6086			; It is also put in not contended memory area (>= 0x8000). 
+6086			;=========================================================================== 
+6086			 
+6086			; Stack: this area is reserved for the stack 
+6086			STACK_SIZE: equ 100d    ; in words 
+6086			 
+6086			 
+6086			; Reserve stack space 
+6086			stack_check: 
+6086 00			    defb    0   ; this is check on write in the debug.scpt, to check if the stack is overwritten, 
+6087			stack_bottom: 
+6087 0x00...		    defs    STACK_SIZE*2, 0 
+614f			stack_top: 
+614f			 
+614f			 
+614f			;=========================================================================== 
+614f			; After loading the stackpointer is pointing here. 
+614f			; The value is used as starting point. 
+614f			;=========================================================================== 
+614f 0x00...		    defs    0xFDFA - $, 0 
+fdfa			; address is 0xFDFA 
+fdfa 5f 60		    defw    main ; The .sna format expects the starting address on the stack. 
+fdfc			 
+fdfc			 
+fdfc			; Fill up to 65535 
+fdfc 00...		    defs 0x10000 - $ 
+# End of file main.asm
+0000

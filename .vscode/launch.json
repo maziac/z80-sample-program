@@ -1,0 +1,34 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "z80-debug",
+            "request": "launch",
+            "name": "Z80 Debugger",
+            "zhostname": "localhost",
+            "zport": 10000,
+            "disassemblies": [
+              //  [ 0, 16384 ]    // Spectrum ROM disassembly
+            ],
+            "listFiles": [ 
+                //{ "path": "rom48.list", "useFiles": false },
+                { "path": "z80-sample-program.list", "useFiles": true }
+            ],
+            "labelsFiles": [
+                //"z80-sample-program.labels",
+                "rom48.labels"
+            ],
+            "startAutomatically": true,
+            "skipInterrupt": true,
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stack_top",
+            "loadSnap": "z80-sample-program.sna",
+            "disableLabelResolutionBelow": 513,
+            "tmpDir": ".tmp"
+       }
+
+    ]
+}
