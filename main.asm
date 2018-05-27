@@ -73,8 +73,6 @@ STACK_SIZE: equ 100d    ; in words
 
 
 ; Reserve stack space
-stack_check:
-    defb    0   ; this is check on write in the debug.scpt, to check if the stack is overwritten,
 stack_bottom:
     defs    STACK_SIZE*2, 0
 stack_top:

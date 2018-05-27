@@ -40,7 +40,7 @@ fill_bckg_line:
     ld h,d
     call fill_memory
     ; check that destination address is still in screen background 
-    ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE
+    ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE-1
     or a    ; clear carry
     sbc hl,de ; compare 
     ret p

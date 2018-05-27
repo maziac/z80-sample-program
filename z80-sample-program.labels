@@ -27,6 +27,5 @@ main_loop:	equ $6072
 pause:	equ $6000
 pause_loop_l1:	equ $6004
 pause_loop_l2:	equ $6002
-stack_bottom:	equ $6087
-stack_check:	equ $6086
-stack_top:	equ $614f
+stack_bottom:	equ $6086
+stack_top:	equ $614e

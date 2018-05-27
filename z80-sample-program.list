@@ -82,7 +82,7 @@
 601a 62			    ld h,d 
 601b cd 0e 60		    call fill_memory 
 601e			    ; check that destination address is still in screen background  
-601e 21 00 5b		    ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE 
+601e 21 ff 5a		    ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE-1 
 6021 b7			    or a    ; clear carry 
 6022 ed 52		    sbc hl,de ; compare  
 6024 f0			    ret p 
@@ -173,7 +173,7 @@
 605f f3			    di 
 6060			  
 6060			    ; Setup stack 
-6060 31 4f 61		    ld sp,stack_top 
+6060 31 4e 61		    ld sp,stack_top 
 6063			 
 6063			if 0 
 6063			    ld b,1 
@@ -222,18 +222,16 @@
 6086			 
 6086			 
 6086			; Reserve stack space 
-6086			stack_check: 
-6086 00			    defb    0   ; this is check on write in the debug.scpt, to check if the stack is overwritten, 
-6087			stack_bottom: 
-6087 0x00...		    defs    STACK_SIZE*2, 0 
-614f			stack_top: 
-614f			 
-614f			 
-614f			;=========================================================================== 
-614f			; After loading the stackpointer is pointing here. 
-614f			; The value is used as starting point. 
-614f			;=========================================================================== 
-614f 0x00...		    defs    0xFDFA - $, 0 
+6086			stack_bottom: 
+6086 0x00...		    defs    STACK_SIZE*2, 0 
+614e			stack_top: 
+614e			 
+614e			 
+614e			;=========================================================================== 
+614e			; After loading the stackpointer is pointing here. 
+614e			; The value is used as starting point. 
+614e			;=========================================================================== 
+614e 0x00...		    defs    0xFDFA - $, 0 
 fdfa			; address is 0xFDFA 
 fdfa 5f 60		    defw    main ; The .sna format expects the starting address on the stack. 
 fdfc			 

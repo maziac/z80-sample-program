@@ -18,8 +18,8 @@
                 { "path": "z80-sample-program.list", "useFiles": true }
             ],
             "labelsFiles": [
-                //"z80-sample-program.labels",
-                "rom48.labels"
+                //"rom48.labels",
+                "z80-sample-program.labels"
             ],
             "startAutomatically": true,
             "skipInterrupt": true,
