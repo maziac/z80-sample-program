@@ -5,6 +5,7 @@
 
     ORG 0x4000
     defs 0x6000 - $    ; move after screen area
+    
 ;===========================================================================
 ; Include modules
 ;===========================================================================
@@ -64,8 +65,7 @@ main_loop:
 
 
 ;===========================================================================
-; Stack. The stack mustn't be in the area 0xC000-0xFFFF.
-; It is also put in not contended memory area (>= 0x8000).
+; Stack. 
 ;===========================================================================
 
 ; Stack: this area is reserved for the stack
@@ -79,7 +79,7 @@ stack_top:
 
 
 ;===========================================================================
-; After loading the stackpointer is pointing here.
+; After loading the snapshot file (.sna) the stackpointer is pointing here.
 ; The value is used as starting point.
 ;===========================================================================
     defs    0xFDFA - $, 0
