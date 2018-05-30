@@ -5,14 +5,29 @@
 
     ORG 0x4000
     defs 0x6000 - $    ; move after screen area
+screen_top: defb    0   ; WPMEM
     
+
+;===========================================================================
+; Persistent watchpoint.
+; Change WPMEMx to WPMEM to activate.
+; If you do so the program will hit a breakpoint when it is tried to
+; write to the first byte of the 3rd line.
+; If you are not able to compile these sources, you can also change WPMEMx
+; to WPMEM directly in teh .list file and start the debugger again.
+; When program breaks in the fill_memory sub routine please hover over hl
+; to see that it contsin 0x5804 or COLOR_SCREEN+64.
+;===========================================================================
+
+; WPMEM 0x5840, 1, w
+
+
 ;===========================================================================
 ; Include modules
 ;===========================================================================
 include "utilities.asm"
 include "fill.asm"
 include "clearscreen.asm"
-
 
 
 ;===========================================================================
@@ -75,7 +90,7 @@ STACK_SIZE: equ 100d    ; in words
 ; Reserve stack space
 stack_bottom:
     defs    STACK_SIZE*2, 0
-stack_top:
+stack_top:  ; WPMEM
 
 
 ;===========================================================================

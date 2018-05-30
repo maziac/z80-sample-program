@@ -73,6 +73,7 @@ fill_colors_ptr:    defw 0
 ; Contains the colors for the lines. Each entry represnts the color for one line.
 fill_colors:
     defb RED, YELLOW, BLUE, GREEN, MAGENTA
-fill_colors_end:
+fill_colors_end:    
+    defb 0  ; WPMEM
     
 
