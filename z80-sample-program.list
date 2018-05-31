@@ -190,7 +190,7 @@
 6061 f3			    di 
 6062			  
 6062			    ; Setup stack 
-6062 31 50 61		    ld sp,stack_top 
+6062 31 9c 60		    ld sp,stack_top 
 6065			 
 6065			if 0 
 6065			    ld b,1 
@@ -234,20 +234,20 @@
 6088			;=========================================================================== 
 6088			 
 6088			; Stack: this area is reserved for the stack 
-6088			STACK_SIZE: equ 100d    ; in words 
+6088			STACK_SIZE: equ 10    ; in words 
 6088			 
 6088			 
 6088			; Reserve stack space 
 6088			stack_bottom: 
 6088 0x00...		    defs    STACK_SIZE*2, 0 
-6150			stack_top:  ; WPMEM 
-6150			 
-6150			 
-6150			;=========================================================================== 
-6150			; After loading the snapshot file (.sna) the stackpointer is pointing here. 
-6150			; The value is used as starting point. 
-6150			;=========================================================================== 
-6150 0x00...		    defs    0xFDFA - $, 0 
+609c 00			stack_top:  defb 0  ; WPMEM 
+609d			 
+609d			 
+609d			;=========================================================================== 
+609d			; After loading the snapshot file (.sna) the stackpointer is pointing here. 
+609d			; The value is used as starting point. 
+609d			;=========================================================================== 
+609d 0x00...		    defs    0xFDFA - $, 0 
 fdfa			; address is 0xFDFA 
 fdfa 61 60		    defw    main ; The .sna format expects the starting address on the stack. 
 fdfc			 

@@ -10,7 +10,7 @@ PAUSE_TIME:	equ $1388
 RED:	equ $0010
 SCREEN:	equ $4000
 SCREEN_SIZE:	equ $1800
-STACK_SIZE:	equ $0064
+STACK_SIZE:	equ $000a
 WHITE:	equ $0038
 YELLOW:	equ $0030
 clear_backg:	equ $6052
@@ -29,4 +29,4 @@ pause_loop_l1:	equ $6005
 pause_loop_l2:	equ $6003
 screen_top:	equ $6000
 stack_bottom:	equ $6088
-stack_top:	equ $6150
+stack_top:	equ $609c

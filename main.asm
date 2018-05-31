@@ -84,13 +84,13 @@ main_loop:
 ;===========================================================================
 
 ; Stack: this area is reserved for the stack
-STACK_SIZE: equ 100d    ; in words
+STACK_SIZE: equ 10    ; in words
 
 
 ; Reserve stack space
 stack_bottom:
     defs    STACK_SIZE*2, 0
-stack_top:  ; WPMEM
+stack_top:  defb 0  ; WPMEM
 
 
 ;===========================================================================
