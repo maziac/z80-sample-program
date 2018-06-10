@@ -10,6 +10,8 @@ PAUSE_TIME:     equ 5000   ; 0.5 sec
 ; Pauses for a while.
 ; de: wait time, ca: de*0.1ms
 pause:
+	ret	; comment this line if you would like to see a pause between drawing of the lines.
+
 	push af
 	push bc
 
