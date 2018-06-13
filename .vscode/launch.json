@@ -10,6 +10,7 @@
             "name": "Z80 Debugger",
             "zhostname": "localhost",
             "zport": 10000,
+            "topOfStack": "stack_top",
             "disassemblies": [
               //  [ 0, 16384 ]    // Spectrum ROM disassembly
             ],
@@ -21,14 +22,8 @@
                 //"rom48.labels",
                 "z80-sample-program.labels"
             ],
-            "startAutomatically": true,
-            "skipInterrupt": true,
-            "rootFolder": "${workspaceFolder}",
-            "topOfStack": "stack_top",
             "loadSnap": "z80-sample-program.sna",
-            "disableLabelResolutionBelow": 513,
-            "tmpDir": ".tmp"
+            "skipInterrupt": true
        }
-
     ]
 }
