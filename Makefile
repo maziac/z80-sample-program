@@ -11,15 +11,15 @@
 
 
 PROJ = z80-sample-program
-ASM = "/Volumes/Macintosh HD 2/Projects/zesarux/z80asm/z80asm"	# Path to the Z80 Assembler, http://savannah.nongnu.org/projects/z80asm/
+# Path to the Z80 Assembler, http://savannah.nongnu.org/projects/z80asm/
+ASM = "/Volumes/Macintosh HD 2/Projects/zesarux/z80asm/z80asm"
+#ASM = "/Volumes/Macintosh HD 2/Projects/zesarux/test/z80asm/src/z80asm"
 SNA_FILE = $(PROJ).sna
 SNA_HDR = $(PROJ).snahdr
 SNA_SYMS = $(PROJ).symbols
 SNA_BLOCK = $(PROJ).blocks
 SNA_OBJ = $(PROJ).re.obj
 SNA_ASM = $(PROJ).re.asm
-MAIN_C = main.c
-MAIN_CASM = main.c.asm
 MAIN_ASM = main.asm
 MAIN_OBJ = main.obj
 ASM_FILES = $(MAIN_ASM) clearscreen.asm fill.asm utilities.asm

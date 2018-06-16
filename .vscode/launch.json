@@ -15,12 +15,12 @@
               //  [ 0, 16384 ]    // Spectrum ROM disassembly
             ],
             "listFiles": [ 
-                //{ "path": "rom48.list", "useFiles": false },
+                // "../rom48.list",
                 { "path": "z80-sample-program.list", "useFiles": true }
             ],
             "labelsFiles": [
                 //"rom48.labels",
-                "z80-sample-program.labels"
+                //"z80-sample-program.labels"
             ],
             "loadSnap": "z80-sample-program.sna",
             "skipInterrupt": true

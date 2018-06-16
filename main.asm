@@ -56,7 +56,7 @@ endif
     call clear_backg
 
     ; Init
-    ld hl,fill_colors
+lbl1:    ld hl,fill_colors
     ld (fill_colors_ptr),hl
     ld de,COLOR_SCREEN
     
