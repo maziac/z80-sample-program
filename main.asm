@@ -2,6 +2,8 @@
 ; main.asm
 ;===========================================================================
 
+    DEVICE ZXSPECTRUM128
+
 
     ORG 0x4000
     defs 0x6000 - $    ; move after screen area
@@ -25,9 +27,9 @@ screen_top: defb    0   ; WPMEM
 ;===========================================================================
 ; Include modules
 ;===========================================================================
-include "utilities.asm"
-include "fill.asm"
-include "clearscreen.asm"
+    include "utilities.asm"
+    include "fill.asm"
+    include "clearscreen.asm"
 
 
 ;===========================================================================
@@ -42,14 +44,14 @@ main:
     ; Setup stack
     ld sp,stack_top
 
-if 0
+  IF 0
     ld b,1
 start_wait_loop:
     ld de,PAUSE_TIME
     call pause
     nop
     djnz start_wait_loop
-endif
+  ENDIF
  
     ; CLS
     call clear_screen
@@ -104,3 +106,7 @@ stack_top:  defb 0  ; WPMEM
 
 ; Fill up to 65535
     defs 0x10000 - $
+
+
+    SAVESNA "z80-sample-program.sna", main
+    

@@ -10,15 +10,16 @@
             "name": "Z80 Debugger",
             "zhostname": "localhost",
             "zport": 10000,
-            "listFiles": [
+                        "listFiles": [
                 // "../rom48.list",
-                { "path": "z80-sample-program.list", "useFiles": true }
+                { 
+                    "path": "z80-sample-program.list", 
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "main.asm"
+                }
             ],
-            "labelsFiles": [
-                //"rom48.labels",
-                "z80-sample-program.labels"
-             ],
-            "startAutomatically": true,
+            "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
                 //"-sprites",

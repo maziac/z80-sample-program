@@ -3,31 +3,28 @@
     "command": "make",
     "tasks": [
         {
-            "label": "Makefile",
-
-            // Make this the default build command.
-            "group": "build",
-
-            // Show the output window only if unrecognized errors occur.
-            "presentation":{
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared"
-            },
-
-            // No args
-            "args": ["default"],
-
-            "problemMatcher":  {
-                 "fileLocation": ["relative", "${workspaceRoot}"],
+            "label": "make default",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "all"
+            ],
+            "problemMatcher": {
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}"
+                ],
                 "pattern": {
-                    "regexp": "^(.*):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "regexp": "^(.*)\\((\\d+)\\):\\s+(warning|error):\\s+(.*)$",
                     "file": 1,
                     "line": 2,
                     "severity": 3,
                     "message": 4
                 }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]
