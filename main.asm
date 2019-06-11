@@ -12,13 +12,11 @@ screen_top: defb    0   ; WPMEM
 
 ;===========================================================================
 ; Persistent watchpoint.
-; Change WPMEMx to WPMEM to activate.
-; If you do so the program will hit a breakpoint when it is tried to
+; Change WPMEMx (remove the 'x' from WPMEMx) below to activate.
+; If you do so the program will hit a breakpoint when it tries to
 ; write to the first byte of the 3rd line.
-; If you are not able to compile these sources, you can also change WPMEMx
-; to WPMEM directly in teh .list file and start the debugger again.
 ; When program breaks in the fill_memory sub routine please hover over hl
-; to see that it contsin 0x5804 or COLOR_SCREEN+64.
+; to see that it contains 0x5804 or COLOR_SCREEN+64.
 ;===========================================================================
 
 ; WPMEMx 0x5840, 1, w
@@ -31,6 +29,11 @@ screen_top: defb    0   ; WPMEM
     include "fill.asm"
     include "clearscreen.asm"
 
+    ; Normally you would assemble the unit tests in a separate target
+    ; in the makefile.
+    ; As this is a very short program and for simplicity the
+    ; unit tests and the main program are assembled in the same binary.
+    include "unit_tests.asm"
 
 ;===========================================================================
 ; main routine - the code execution starts here.
@@ -95,13 +98,6 @@ stack_bottom:
 stack_top:  defb 0  ; WPMEM
 
 
-;===========================================================================
-; After loading the snapshot file (.sna) the stackpointer is pointing here.
-; The value is used as starting point.
-;===========================================================================
-    defs    0xFDFA - $, 0
-; address is 0xFDFA
-    defw    main ; The .sna format expects the starting address on the stack.
 
 
 ; Fill up to 65535

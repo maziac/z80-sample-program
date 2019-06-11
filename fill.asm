@@ -32,8 +32,11 @@ fill_memory:
 
 
 ; Fills a background line with a color. 
+; IN:
 ; a = color
 ; de = points to background screen
+; OUT:
+; de = pointing to next line
 fill_bckg_line:
     ld bc,BCKG_LINE_SIZE
     ld l,e

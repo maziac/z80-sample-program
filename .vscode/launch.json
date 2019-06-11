@@ -7,13 +7,12 @@
         {
             "type": "z80-debug",
             "request": "launch",
-            "name": "Z80 Debugger",
+            "name": "Sample-Program",
             "zhostname": "localhost",
             "zport": 10000,
-                        "listFiles": [
-                // "../rom48.list",
-                { 
-                    "path": "z80-sample-program.list", 
+            "listFiles": [
+                {
+                    "path": "z80-sample-program.list",
                     "useFiles": true,
                     "asm": "sjasmplus",
                     "mainFile": "main.asm"
@@ -33,6 +32,46 @@
             "load": "z80-sample-program.sna",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
-       }
+       },
+
+
+       {
+            "type": "z80-debug",
+            "request": "launch",
+            "name": "Unit Tests",
+            "unitTests": true,
+            "zhostname": "localhost",
+            "zport": 10000,
+            "resetOnLaunch": true,
+            "skipInterrupt": true,
+            "startAutomatically": true,
+            "codeCoverage": true,
+            "commandsAfterLaunch": [
+                "-wpmem enable",
+                "-assert enable",
+                "-logpoint enable", // Enable all logpoints, especially [UNITTEST]
+            ],
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "listFiles": [
+                {
+                    "path": "z80-sample-program.list",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "main.asm"
+                }
+            ],
+    
+            "rootFolder": "${workspaceFolder}",
+            "load": "z80-sample-program.sna",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp",
+
+            "logSocket": {
+                "channelOutputEnabled": true
+            }
+        },
+
     ]
 }
