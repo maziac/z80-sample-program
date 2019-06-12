@@ -4,13 +4,13 @@
 
 This is a small Z80 assembler program that just puts some colored lines on the ZX Spectrum's screen.
 
-The intention is to use this as a kind of tutorial for the z80-debug extension for vscode/ZEsarUX.
+The intention is to use this as a kind of tutorial for the [z80-debug extension](https://github.com/maziac/z80-debug) for vscode/ZEsarUX.
 
 
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- The z80-debug adapter extension
+- The [z80-debug adapter extension](https://github.com/maziac/z80-debug)
 - The ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v7.3)
 
 If you want to build yourself (not required if you just want to test debugging): 
