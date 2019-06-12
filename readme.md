@@ -15,7 +15,7 @@ The intention is to use this as a kind of tutorial for the [z80-debug extension]
 
 If you want to build yourself (not required if you just want to test debugging): 
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus
-- Following utilities are required: makes
+- Following utilities are required: make
 
 
 # Building
