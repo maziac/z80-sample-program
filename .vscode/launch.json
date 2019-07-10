@@ -66,11 +66,7 @@
             "rootFolder": "${workspaceFolder}",
             "load": "z80-sample-program.sna",
             "smallValuesMaximum": 513,
-            "tmpDir": ".tmp",
-
-            "logSocket": {
-                "channelOutputEnabled": true
-            }
+            "tmpDir": ".tmp"
         },
 
     ]
