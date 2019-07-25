@@ -45,7 +45,6 @@
             "resetOnLaunch": true,
             "skipInterrupt": true,
             "startAutomatically": true,
-            "codeCoverage": true,
             "commandsAfterLaunch": [
                 "-wpmem enable",
                 "-assert enable",
