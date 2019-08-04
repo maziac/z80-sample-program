@@ -44,11 +44,10 @@
             "zport": 10000,
             "resetOnLaunch": true,
             "skipInterrupt": true,
-            "startAutomatically": true,
             "commandsAfterLaunch": [
                 "-wpmem enable",
                 "-assert enable",
-                "-logpoint enable", // Enable all logpoints, especially [UNITTEST]
+                //"-logpoint enable", // Enable all logpoints, especially [UNITTEST]
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
