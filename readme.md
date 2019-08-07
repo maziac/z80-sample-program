@@ -11,7 +11,7 @@ The intention is to use this as a kind of tutorial for the [z80-debug extension]
 
 - Visual Studio Code (vscode)
 - The [z80-debug adapter extension](https://github.com/maziac/z80-debug)
-- The ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v7.3)
+- The ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v8.0)
 
 If you want to build yourself (not required if you just want to test debugging): 
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus

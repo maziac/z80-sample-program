@@ -102,7 +102,7 @@
         ld (UNITTEST_SAVE_REG),a
         ld a,reg?
         cp value?
-        call nz,UNITTEST_TEST_READY_FAILURE
+        call z,UNITTEST_TEST_READY_FAILURE
         ld a,(UNITTEST_SAVE_REG)
     ENDM
 
@@ -123,9 +123,26 @@
     ENDM
 
 
+     ; Tests a double register for a specific value.
+    ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
+    MACRO TEST_DREG_UNEQUAL dreg?, value?
+        push de
+        push hl
+        push dreg?
+        pop hl
+        ld de,value?
+        or a 
+        sbc hl,de
+        pop hl 
+        pop de 
+        call z,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+        nop        
+    ENDM
+
+
     ; Test two registers for equality.
     ; Testcase fails if registers are not equal.
-    MACRO TEST_DREGS_EQUAL dreg1?, dreg2?
+    MACRO TEST_DREGS dreg1?, dreg2?
         push de
         push hl
         push dreg1?
@@ -134,8 +151,8 @@
         pop hl
         or a 
         sbc hl,de 
-        pop de 
         pop hl 
+        pop de 
         call nz,UNITTEST_TEST_READY_FAILURE 
         nop
     ENDM
@@ -152,8 +169,8 @@
         pop hl
         or a 
         sbc hl,de 
-        pop de 
         pop hl 
+        pop de 
         call z,UNITTEST_TEST_READY_FAILURE 
         nop
     ENDM
@@ -164,6 +181,7 @@
     ; string = the compared string
     ; term0 = If 0 it is also tested that the string (addr) is null termiated
     MACRO TEST_STRING addr?, string?, term0?
+        push af
         push hl
         push de 
         ld de,.comp_string
@@ -182,6 +200,7 @@
         ; Strings are not equal
         pop de
         pop hl
+        pop af
         call UNITTEST_TEST_READY_FAILURE 
         jr .end
 
@@ -198,6 +217,7 @@
 
         pop de
         pop hl
+        pop af
 .end:
     ENDM
 
@@ -348,7 +368,7 @@ TEST_MEMORY_WORD:    MACRO addr, value
     ENDM
 
     ; Tests A for a specific value.
-    MACRO TEST_A value
+TEST_A:    MACRO value
         cp value
         call nz,UNITTEST_TEST_READY_FAILURE
         nop
@@ -363,7 +383,7 @@ TEST_A_UNEQUAL:    MACRO value
 
     ; Tests a single register for a specific value.
     ; E.g. TEST_REG b, 6 ; Tests if register b == 6
-    MACRO TEST_REG reg, value
+TEST_REG:    MACRO reg, value
         ld (UNITTEST_SAVE_REG),a
         ld a,reg
         cp value
@@ -373,17 +393,17 @@ TEST_A_UNEQUAL:    MACRO value
 
     ; Tests that a single register is not a specific value.
     ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
-    MACRO TEST_REG_UNEQUAL reg, value
+TEST_REG_UNEQUAL:    MACRO reg, value
         ld (UNITTEST_SAVE_REG),a
         ld a,reg
         cp value
-        call nz,UNITTEST_TEST_READY_FAILURE
+        call z,UNITTEST_TEST_READY_FAILURE
         ld a,(UNITTEST_SAVE_REG)
     ENDM
 
     ; Tests a double register for a specific value.
-    ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
-    MACRO TEST_DREG dreg, value
+    ; E.g. TEST_DREG hl, label1 ; Tests if register hl == label1
+TEST_DREG:    MACRO dreg, value
         push de
         push hl
         push dreg
@@ -393,14 +413,30 @@ TEST_A_UNEQUAL:    MACRO value
         sbc hl,de
         pop hl 
         pop de 
-        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+        call nz,UNITTEST_TEST_READY_FAILURE 
+        nop        
+    ENDM
+
+    ; Tests a double register is not a specific value.
+    ; E.g. TEST_DREG_UNEQUAL hl, label1 ; Tests if register hl != label1
+TEST_DREG_UNEQUAL:    MACRO dreg, value
+        push de
+        push hl
+        push dreg
+        pop hl
+        ld de,value
+        or a 
+        sbc hl,de
+        pop hl 
+        pop de 
+        call z,UNITTEST_TEST_READY_FAILURE 
         nop        
     ENDM
 
 
     ; Test two registers for equality.
     ; Testcase fails if registers are not equal.
-TEST_DREGS_EQUAL:    MACRO dreg1, dreg2
+TEST_DREGS:    MACRO dreg1, dreg2
         push de
         push hl
         push dreg1
@@ -437,8 +473,9 @@ TEST_DREGS_UNEQUAL:    MACRO dreg1, dreg2
     ; Tests a memory address for a specific string.
     ; addr = the tested string
     ; string = the compared string
-    ; term0 = If 0 it is also tested that the string (addr) is null termiated
+    ; term0 = If 0 it is also tested that the string (addr) is null terminated
 TEST_STRING:    MACRO addr, string, term0
+        push af
         push hl
         push de 
         ld de,.comp_string
@@ -457,6 +494,7 @@ TEST_STRING:    MACRO addr, string, term0
         ; Strings are not equal
         pop de
         pop hl
+        pop af
         call UNITTEST_TEST_READY_FAILURE 
         jr .end
 
@@ -473,6 +511,7 @@ TEST_STRING:    MACRO addr, string, term0
 
         pop de
         pop hl
+        pop af
 .end:
     ENDM
 

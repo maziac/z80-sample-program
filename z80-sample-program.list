@@ -308,7 +308,7 @@
 102++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
 103++ 6062 ~                    ld a,reg?
 104++ 6062 ~                    cp value?
-105++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+105++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
 106++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
 107++ 6062                  ENDM
 108++ 6062
@@ -329,477 +329,516 @@
 123++ 6062                  ENDM
 124++ 6062
 125++ 6062
-126++ 6062                  ; Test two registers for equality.
-127++ 6062                  ; Testcase fails if registers are not equal.
-128++ 6062                  MACRO TEST_DREGS_EQUAL dreg1?, dreg2?
+126++ 6062                   ; Tests a double register for a specific value.
+127++ 6062                  ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
+128++ 6062                  MACRO TEST_DREG_UNEQUAL dreg?, value?
 129++ 6062 ~                    push de
 130++ 6062 ~                    push hl
-131++ 6062 ~                    push dreg1?
-132++ 6062 ~                    push dreg2?
-133++ 6062 ~                    pop de
-134++ 6062 ~                    pop hl
-135++ 6062 ~                    or a
-136++ 6062 ~                    sbc hl,de
+131++ 6062 ~                    push dreg?
+132++ 6062 ~                    pop hl
+133++ 6062 ~                    ld de,value?
+134++ 6062 ~                    or a
+135++ 6062 ~                    sbc hl,de
+136++ 6062 ~                    pop hl
 137++ 6062 ~                    pop de
-138++ 6062 ~                    pop hl
-139++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-140++ 6062 ~                    nop
-141++ 6062                  ENDM
+138++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+139++ 6062 ~                    nop
+140++ 6062                  ENDM
+141++ 6062
 142++ 6062
-143++ 6062
-144++ 6062                  ; Test two registers for unequality.
-145++ 6062                  ; Testcase fails if registers are equal.
-146++ 6062                  MACRO TEST_DREGS_UNEQUAL dreg1?, dreg2?
-147++ 6062 ~                    push de
-148++ 6062 ~                    push hl
-149++ 6062 ~                    push dreg1?
-150++ 6062 ~                    push dreg2?
-151++ 6062 ~                    pop de
-152++ 6062 ~                    pop hl
-153++ 6062 ~                    or a
-154++ 6062 ~                    sbc hl,de
+143++ 6062                  ; Test two registers for equality.
+144++ 6062                  ; Testcase fails if registers are not equal.
+145++ 6062                  MACRO TEST_DREGS dreg1?, dreg2?
+146++ 6062 ~                    push de
+147++ 6062 ~                    push hl
+148++ 6062 ~                    push dreg1?
+149++ 6062 ~                    push dreg2?
+150++ 6062 ~                    pop de
+151++ 6062 ~                    pop hl
+152++ 6062 ~                    or a
+153++ 6062 ~                    sbc hl,de
+154++ 6062 ~                    pop hl
 155++ 6062 ~                    pop de
-156++ 6062 ~                    pop hl
-157++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
-158++ 6062 ~                    nop
-159++ 6062                  ENDM
+156++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+157++ 6062 ~                    nop
+158++ 6062                  ENDM
+159++ 6062
 160++ 6062
-161++ 6062
-162++ 6062                  ; Tests a memory address for a specific string.
-163++ 6062                  ; addr = the tested string
-164++ 6062                  ; string = the compared string
-165++ 6062                  ; term0 = If 0 it is also tested that the string (addr) is null termiated
-166++ 6062                  MACRO TEST_STRING addr?, string?, term0?
-167++ 6062 ~                    push hl
-168++ 6062 ~                    push de
-169++ 6062 ~                    ld de,.comp_string
-170++ 6062 ~                    ld hl,addr?
-171++ 6062 ~            .loop:
-172++ 6062 ~                    ld a,(de)
-173++ 6062 ~                    ; Check for null termination
-174++ 6062 ~                    or a
-175++ 6062 ~                    jr z,.null_found
-176++ 6062 ~                    cp (hl)
-177++ 6062 ~                    inc de
-178++ 6062 ~                    inc hl
-179++ 6062 ~                    jr z,.loop
-180++ 6062 ~
-181++ 6062 ~            .not_equal:
-182++ 6062 ~                    ; Strings are not equal
-183++ 6062 ~                    pop de
-184++ 6062 ~                    pop hl
-185++ 6062 ~                    call UNITTEST_TEST_READY_FAILURE
-186++ 6062 ~                    jr .end
-187++ 6062 ~
-188++ 6062 ~            .comp_string:
-189++ 6062 ~                    defb string?, 0
-190++ 6062 ~
-191++ 6062 ~            .null_found:
-192++ 6062 ~                    ; We are at the end of the compare string.
-193++ 6062 ~                    ; Check if null termination should be compared with the tested string.
-194++ 6062 ~                  IF term0? == 0
-195++ 6062 ~                    cp (hl)
-196++ 6062 ~                    jr nz,.not_equal
-197++ 6062 ~                  ENDIF
+161++ 6062                  ; Test two registers for unequality.
+162++ 6062                  ; Testcase fails if registers are equal.
+163++ 6062                  MACRO TEST_DREGS_UNEQUAL dreg1?, dreg2?
+164++ 6062 ~                    push de
+165++ 6062 ~                    push hl
+166++ 6062 ~                    push dreg1?
+167++ 6062 ~                    push dreg2?
+168++ 6062 ~                    pop de
+169++ 6062 ~                    pop hl
+170++ 6062 ~                    or a
+171++ 6062 ~                    sbc hl,de
+172++ 6062 ~                    pop hl
+173++ 6062 ~                    pop de
+174++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
+175++ 6062 ~                    nop
+176++ 6062                  ENDM
+177++ 6062
+178++ 6062
+179++ 6062                  ; Tests a memory address for a specific string.
+180++ 6062                  ; addr = the tested string
+181++ 6062                  ; string = the compared string
+182++ 6062                  ; term0 = If 0 it is also tested that the string (addr) is null termiated
+183++ 6062                  MACRO TEST_STRING addr?, string?, term0?
+184++ 6062 ~                    push af
+185++ 6062 ~                    push hl
+186++ 6062 ~                    push de
+187++ 6062 ~                    ld de,.comp_string
+188++ 6062 ~                    ld hl,addr?
+189++ 6062 ~            .loop:
+190++ 6062 ~                    ld a,(de)
+191++ 6062 ~                    ; Check for null termination
+192++ 6062 ~                    or a
+193++ 6062 ~                    jr z,.null_found
+194++ 6062 ~                    cp (hl)
+195++ 6062 ~                    inc de
+196++ 6062 ~                    inc hl
+197++ 6062 ~                    jr z,.loop
 198++ 6062 ~
-199++ 6062 ~                    pop de
-200++ 6062 ~                    pop hl
-201++ 6062 ~            .end:
-202++ 6062                  ENDM
-203++ 6062
-204++ 6062
-205++ 6062                  ; Initializes the registers with default values.
-206++ 6062                  ; Use before the tested function is called.
-207++ 6062                  ; After the call the TEST_UNCHANGED_XX tests can be used
-208++ 6062                  ; to check if the register was changed.
-209++ 6062                  MACRO DEFAULT_REGS
-210++ 6062 ~                    ld a,0xAA
-211++ 6062 ~                    ld bc,0xBBCC
-212++ 6062 ~                    ld de,0xDDEE
-213++ 6062 ~                    ld hl,0x8899
-214++ 6062                  ENDM
-215++ 6062
-216++ 6062                  MACRO TEST_UNCHANGED_BC
-217++ 6062 ~                    push hl
-218++ 6062 ~                    ld hl,0xBBCC
-219++ 6062 ~                    or a
-220++ 6062 ~                    sbc hl,bc
-221++ 6062 ~                    pop hl
-222++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-223++ 6062 ~                    nop
-224++ 6062                  ENDM
-225++ 6062
-226++ 6062                  MACRO TEST_UNCHANGED_DE
-227++ 6062 ~                    push hl
-228++ 6062 ~                    ld hl,0xDDEE
-229++ 6062 ~                    or a
-230++ 6062 ~                    sbc hl,de
-231++ 6062 ~                    pop hl
-232++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-233++ 6062 ~                    nop
+199++ 6062 ~            .not_equal:
+200++ 6062 ~                    ; Strings are not equal
+201++ 6062 ~                    pop de
+202++ 6062 ~                    pop hl
+203++ 6062 ~                    pop af
+204++ 6062 ~                    call UNITTEST_TEST_READY_FAILURE
+205++ 6062 ~                    jr .end
+206++ 6062 ~
+207++ 6062 ~            .comp_string:
+208++ 6062 ~                    defb string?, 0
+209++ 6062 ~
+210++ 6062 ~            .null_found:
+211++ 6062 ~                    ; We are at the end of the compare string.
+212++ 6062 ~                    ; Check if null termination should be compared with the tested string.
+213++ 6062 ~                  IF term0? == 0
+214++ 6062 ~                    cp (hl)
+215++ 6062 ~                    jr nz,.not_equal
+216++ 6062 ~                  ENDIF
+217++ 6062 ~
+218++ 6062 ~                    pop de
+219++ 6062 ~                    pop hl
+220++ 6062 ~                    pop af
+221++ 6062 ~            .end:
+222++ 6062                  ENDM
+223++ 6062
+224++ 6062
+225++ 6062                  ; Initializes the registers with default values.
+226++ 6062                  ; Use before the tested function is called.
+227++ 6062                  ; After the call the TEST_UNCHANGED_XX tests can be used
+228++ 6062                  ; to check if the register was changed.
+229++ 6062                  MACRO DEFAULT_REGS
+230++ 6062 ~                    ld a,0xAA
+231++ 6062 ~                    ld bc,0xBBCC
+232++ 6062 ~                    ld de,0xDDEE
+233++ 6062 ~                    ld hl,0x8899
 234++ 6062                  ENDM
 235++ 6062
-236++ 6062                  MACRO TEST_UNCHANGED_HL
-237++ 6062 ~                    push de
-238++ 6062 ~                    ld de,0x8899
+236++ 6062                  MACRO TEST_UNCHANGED_BC
+237++ 6062 ~                    push hl
+238++ 6062 ~                    ld hl,0xBBCC
 239++ 6062 ~                    or a
-240++ 6062 ~                    sbc hl,de
-241++ 6062 ~                    add hl,de   ; restore hl without affecting the flags
-242++ 6062 ~                    pop de
-243++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-244++ 6062 ~                    nop
-245++ 6062                  ENDM
-246++ 6062
-247++ 6062                  MACRO TEST_UNCHANGED_BC_DE
-248++ 6062 ~                    TEST_UNCHANGED_BC
-249++ 6062 ~                    TEST_UNCHANGED_DE
-250++ 6062                  ENDM
-251++ 6062
-252++ 6062                  MACRO TEST_UNCHANGED_BC_DE_HL
-253++ 6062 ~                    TEST_UNCHANGED_BC_DE
-254++ 6062 ~                    TEST_UNCHANGED_HL
-255++ 6062                  ENDM
-256++ 6062
-257++ 6062                  MACRO TEST_UNCHANGED_A
-258++ 6062 ~                    TEST_A 0xAA
-259++ 6062                  ENDM
-260++ 6062
-261++ 6062                  MACRO TEST_UNCHANGED_B
-262++ 6062 ~                    TEST_REG b, 0xBB
-263++ 6062                  ENDM
-264++ 6062
-265++ 6062                  MACRO TEST_UNCHANGED_C
-266++ 6062 ~                    TEST_REG c, 0xCC
-267++ 6062                  ENDM
-268++ 6062
-269++ 6062                  MACRO TEST_UNCHANGED_D
-270++ 6062 ~                    TEST_REG d, 0xDD
-271++ 6062                  ENDM
-272++ 6062
-273++ 6062                  MACRO TEST_UNCHANGED_E
-274++ 6062 ~                    TEST_REG e, 0xEE
+240++ 6062 ~                    sbc hl,bc
+241++ 6062 ~                    pop hl
+242++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+243++ 6062 ~                    nop
+244++ 6062                  ENDM
+245++ 6062
+246++ 6062                  MACRO TEST_UNCHANGED_DE
+247++ 6062 ~                    push hl
+248++ 6062 ~                    ld hl,0xDDEE
+249++ 6062 ~                    or a
+250++ 6062 ~                    sbc hl,de
+251++ 6062 ~                    pop hl
+252++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+253++ 6062 ~                    nop
+254++ 6062                  ENDM
+255++ 6062
+256++ 6062                  MACRO TEST_UNCHANGED_HL
+257++ 6062 ~                    push de
+258++ 6062 ~                    ld de,0x8899
+259++ 6062 ~                    or a
+260++ 6062 ~                    sbc hl,de
+261++ 6062 ~                    add hl,de   ; restore hl without affecting the flags
+262++ 6062 ~                    pop de
+263++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+264++ 6062 ~                    nop
+265++ 6062                  ENDM
+266++ 6062
+267++ 6062                  MACRO TEST_UNCHANGED_BC_DE
+268++ 6062 ~                    TEST_UNCHANGED_BC
+269++ 6062 ~                    TEST_UNCHANGED_DE
+270++ 6062                  ENDM
+271++ 6062
+272++ 6062                  MACRO TEST_UNCHANGED_BC_DE_HL
+273++ 6062 ~                    TEST_UNCHANGED_BC_DE
+274++ 6062 ~                    TEST_UNCHANGED_HL
 275++ 6062                  ENDM
 276++ 6062
-277++ 6062                  MACRO TEST_UNCHANGED_H
-278++ 6062 ~                    TEST_REG h, 0x88
+277++ 6062                  MACRO TEST_UNCHANGED_A
+278++ 6062 ~                    TEST_A 0xAA
 279++ 6062                  ENDM
 280++ 6062
-281++ 6062                  MACRO TEST_UNCHANGED_L
-282++ 6062 ~                    TEST_REG l, 0x99
+281++ 6062                  MACRO TEST_UNCHANGED_B
+282++ 6062 ~                    TEST_REG b, 0xBB
 283++ 6062                  ENDM
 284++ 6062
-285++ 6062
-286++ 6062                  ; Macro to test flags for Z.
-287++ 6062                  ; Testcase fails for NZ.
-288++ 6062                  MACRO TEST_FLAG_Z
-289++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-290++ 6062 ~                    nop
+285++ 6062                  MACRO TEST_UNCHANGED_C
+286++ 6062 ~                    TEST_REG c, 0xCC
+287++ 6062                  ENDM
+288++ 6062
+289++ 6062                  MACRO TEST_UNCHANGED_D
+290++ 6062 ~                    TEST_REG d, 0xDD
 291++ 6062                  ENDM
 292++ 6062
-293++ 6062
-294++ 6062                  ; Macro to test flags for NZ.
-295++ 6062                  ; Testcase fails for Z.
-296++ 6062                  MACRO TEST_FLAG_NZ
-297++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
-298++ 6062 ~                    nop
+293++ 6062                  MACRO TEST_UNCHANGED_E
+294++ 6062 ~                    TEST_REG e, 0xEE
+295++ 6062                  ENDM
+296++ 6062
+297++ 6062                  MACRO TEST_UNCHANGED_H
+298++ 6062 ~                    TEST_REG h, 0x88
 299++ 6062                  ENDM
 300++ 6062
-301++ 6062
-302++ 6062                  ; This macro uses all registers, also the shadow registers.
-303++ 6062                  MACRO USE_ALL_REGS
-304++ 6062 ~                    ld a,0xCD
-305++ 6062 ~                    ld bc,0xBBCC
-306++ 6062 ~                    ld de,0xDDEE
-307++ 6062 ~                    ld hl,0xFF11
-308++ 6062 ~                    ld ix,0x7788
-309++ 6062 ~                    ld iy,0x99AA
-310++ 6062 ~                    exx
-311++ 6062 ~                    ld a,0xDC
-312++ 6062 ~                    ld bc,0x1122
-313++ 6062 ~                    ld de,0x3344
-314++ 6062 ~                    ld hl,0x5566
-315++ 6062 ~                    exx
-316++ 6062                  ENDM
-317++ 6062
-318++ 6062                  ; sjasmplus end
-319++ 6062                  ; -----------------------------------------------------------
+301++ 6062                  MACRO TEST_UNCHANGED_L
+302++ 6062 ~                    TEST_REG l, 0x99
+303++ 6062                  ENDM
+304++ 6062
+305++ 6062
+306++ 6062                  ; Macro to test flags for Z.
+307++ 6062                  ; Testcase fails for NZ.
+308++ 6062                  MACRO TEST_FLAG_Z
+309++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+310++ 6062 ~                    nop
+311++ 6062                  ENDM
+312++ 6062
+313++ 6062
+314++ 6062                  ; Macro to test flags for NZ.
+315++ 6062                  ; Testcase fails for Z.
+316++ 6062                  MACRO TEST_FLAG_NZ
+317++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
+318++ 6062 ~                    nop
+319++ 6062                  ENDM
 320++ 6062
 321++ 6062
-322++ 6062                ELSE
-323++ 6062 ~                ; -----------------------------------------------------------
-324++ 6062 ~                ; Code for other assemblers
-325++ 6062 ~
-326++ 6062 ~
-327++ 6062 ~                ; Tests a memory address for a specific byte value.
-328++ 6062 ~            TEST_MEMORY_BYTE:    MACRO addr, value
-329++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
-330++ 6062 ~                    ld a,(addr)
-331++ 6062 ~                    cp value
-332++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-333++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
-334++ 6062 ~                ENDM
-335++ 6062 ~
-336++ 6062 ~                ; Tests a memory address for a specific word value.
-337++ 6062 ~                ; If the test fails the '(addr)' can be found in DE.
-338++ 6062 ~            TEST_MEMORY_WORD:    MACRO addr, value
-339++ 6062 ~                    push de
-340++ 6062 ~                    push hl
-341++ 6062 ~                    ld hl,value
-342++ 6062 ~                    ld de,(addr)
-343++ 6062 ~                    or a
-344++ 6062 ~                    sbc hl,de
-345++ 6062 ~                    pop hl
-346++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-347++ 6062 ~                    pop de
-348++ 6062 ~                ENDM
-349++ 6062 ~
-350++ 6062 ~                ; Tests A for a specific value.
-351++ 6062 ~                MACRO TEST_A value
-352++ 6062 ~                    cp value
-353++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-354++ 6062 ~                    nop
-355++ 6062 ~                ENDM
-356++ 6062 ~
-357++ 6062 ~                ; Tests that A is not equal to a specific value.
-358++ 6062 ~            TEST_A_UNEQUAL:    MACRO value
-359++ 6062 ~                    cp value
-360++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
-361++ 6062 ~                    nop
-362++ 6062 ~                ENDM
-363++ 6062 ~
-364++ 6062 ~                ; Tests a single register for a specific value.
-365++ 6062 ~                ; E.g. TEST_REG b, 6 ; Tests if register b == 6
-366++ 6062 ~                MACRO TEST_REG reg, value
-367++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
-368++ 6062 ~                    ld a,reg
-369++ 6062 ~                    cp value
-370++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-371++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
-372++ 6062 ~                ENDM
-373++ 6062 ~
-374++ 6062 ~                ; Tests that a single register is not a specific value.
-375++ 6062 ~                ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
-376++ 6062 ~                MACRO TEST_REG_UNEQUAL reg, value
-377++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
-378++ 6062 ~                    ld a,reg
+322++ 6062                  ; This macro uses all registers, also the shadow registers.
+323++ 6062                  MACRO USE_ALL_REGS
+324++ 6062 ~                    ld a,0xCD
+325++ 6062 ~                    ld bc,0xBBCC
+326++ 6062 ~                    ld de,0xDDEE
+327++ 6062 ~                    ld hl,0xFF11
+328++ 6062 ~                    ld ix,0x7788
+329++ 6062 ~                    ld iy,0x99AA
+330++ 6062 ~                    exx
+331++ 6062 ~                    ld a,0xDC
+332++ 6062 ~                    ld bc,0x1122
+333++ 6062 ~                    ld de,0x3344
+334++ 6062 ~                    ld hl,0x5566
+335++ 6062 ~                    exx
+336++ 6062                  ENDM
+337++ 6062
+338++ 6062                  ; sjasmplus end
+339++ 6062                  ; -----------------------------------------------------------
+340++ 6062
+341++ 6062
+342++ 6062                ELSE
+343++ 6062 ~                ; -----------------------------------------------------------
+344++ 6062 ~                ; Code for other assemblers
+345++ 6062 ~
+346++ 6062 ~
+347++ 6062 ~                ; Tests a memory address for a specific byte value.
+348++ 6062 ~            TEST_MEMORY_BYTE:    MACRO addr, value
+349++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
+350++ 6062 ~                    ld a,(addr)
+351++ 6062 ~                    cp value
+352++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+353++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
+354++ 6062 ~                ENDM
+355++ 6062 ~
+356++ 6062 ~                ; Tests a memory address for a specific word value.
+357++ 6062 ~                ; If the test fails the '(addr)' can be found in DE.
+358++ 6062 ~            TEST_MEMORY_WORD:    MACRO addr, value
+359++ 6062 ~                    push de
+360++ 6062 ~                    push hl
+361++ 6062 ~                    ld hl,value
+362++ 6062 ~                    ld de,(addr)
+363++ 6062 ~                    or a
+364++ 6062 ~                    sbc hl,de
+365++ 6062 ~                    pop hl
+366++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+367++ 6062 ~                    pop de
+368++ 6062 ~                ENDM
+369++ 6062 ~
+370++ 6062 ~                ; Tests A for a specific value.
+371++ 6062 ~            TEST_A:    MACRO value
+372++ 6062 ~                    cp value
+373++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+374++ 6062 ~                    nop
+375++ 6062 ~                ENDM
+376++ 6062 ~
+377++ 6062 ~                ; Tests that A is not equal to a specific value.
+378++ 6062 ~            TEST_A_UNEQUAL:    MACRO value
 379++ 6062 ~                    cp value
-380++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-381++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
+380++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
+381++ 6062 ~                    nop
 382++ 6062 ~                ENDM
 383++ 6062 ~
-384++ 6062 ~                ; Tests a double register for a specific value.
-385++ 6062 ~                ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
-386++ 6062 ~                MACRO TEST_DREG dreg, value
-387++ 6062 ~                    push de
-388++ 6062 ~                    push hl
-389++ 6062 ~                    push dreg
-390++ 6062 ~                    pop hl
-391++ 6062 ~                    ld de,value
-392++ 6062 ~                    or a
-393++ 6062 ~                    sbc hl,de
-394++ 6062 ~                    pop hl
-395++ 6062 ~                    pop de
-396++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-397++ 6062 ~                    nop
-398++ 6062 ~                ENDM
-399++ 6062 ~
-400++ 6062 ~
-401++ 6062 ~                ; Test two registers for equality.
-402++ 6062 ~                ; Testcase fails if registers are not equal.
-403++ 6062 ~            TEST_DREGS_EQUAL:    MACRO dreg1, dreg2
-404++ 6062 ~                    push de
-405++ 6062 ~                    push hl
-406++ 6062 ~                    push dreg1
-407++ 6062 ~                    push dreg2
-408++ 6062 ~                    pop de
-409++ 6062 ~                    pop hl
-410++ 6062 ~                    or a
-411++ 6062 ~                    sbc hl,de
-412++ 6062 ~                    pop de
-413++ 6062 ~                    pop hl
-414++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-415++ 6062 ~                    nop
-416++ 6062 ~                ENDM
-417++ 6062 ~
-418++ 6062 ~
-419++ 6062 ~                ; Test two registers for unequality.
-420++ 6062 ~                ; Testcase fails if registers are equal.
-421++ 6062 ~            TEST_DREGS_UNEQUAL:    MACRO dreg1, dreg2
-422++ 6062 ~                    push de
-423++ 6062 ~                    push hl
-424++ 6062 ~                    push dreg1
-425++ 6062 ~                    push dreg2
-426++ 6062 ~                    pop de
-427++ 6062 ~                    pop hl
+384++ 6062 ~                ; Tests a single register for a specific value.
+385++ 6062 ~                ; E.g. TEST_REG b, 6 ; Tests if register b == 6
+386++ 6062 ~            TEST_REG:    MACRO reg, value
+387++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
+388++ 6062 ~                    ld a,reg
+389++ 6062 ~                    cp value
+390++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+391++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
+392++ 6062 ~                ENDM
+393++ 6062 ~
+394++ 6062 ~                ; Tests that a single register is not a specific value.
+395++ 6062 ~                ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
+396++ 6062 ~            TEST_REG_UNEQUAL:    MACRO reg, value
+397++ 6062 ~                    ld (UNITTEST_SAVE_REG),a
+398++ 6062 ~                    ld a,reg
+399++ 6062 ~                    cp value
+400++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
+401++ 6062 ~                    ld a,(UNITTEST_SAVE_REG)
+402++ 6062 ~                ENDM
+403++ 6062 ~
+404++ 6062 ~                ; Tests a double register for a specific value.
+405++ 6062 ~                ; E.g. TEST_DREG hl, label1 ; Tests if register hl == label1
+406++ 6062 ~            TEST_DREG:    MACRO dreg, value
+407++ 6062 ~                    push de
+408++ 6062 ~                    push hl
+409++ 6062 ~                    push dreg
+410++ 6062 ~                    pop hl
+411++ 6062 ~                    ld de,value
+412++ 6062 ~                    or a
+413++ 6062 ~                    sbc hl,de
+414++ 6062 ~                    pop hl
+415++ 6062 ~                    pop de
+416++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+417++ 6062 ~                    nop
+418++ 6062 ~                ENDM
+419++ 6062 ~
+420++ 6062 ~                ; Tests a double register is not a specific value.
+421++ 6062 ~                ; E.g. TEST_DREG_UNEQUAL hl, label1 ; Tests if register hl != label1
+422++ 6062 ~            TEST_DREG_UNEQUAL:    MACRO dreg, value
+423++ 6062 ~                    push de
+424++ 6062 ~                    push hl
+425++ 6062 ~                    push dreg
+426++ 6062 ~                    pop hl
+427++ 6062 ~                    ld de,value
 428++ 6062 ~                    or a
 429++ 6062 ~                    sbc hl,de
-430++ 6062 ~                    pop de
-431++ 6062 ~                    pop hl
+430++ 6062 ~                    pop hl
+431++ 6062 ~                    pop de
 432++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
 433++ 6062 ~                    nop
 434++ 6062 ~                ENDM
 435++ 6062 ~
 436++ 6062 ~
-437++ 6062 ~                ; Tests a memory address for a specific string.
-438++ 6062 ~                ; addr = the tested string
-439++ 6062 ~                ; string = the compared string
-440++ 6062 ~                ; term0 = If 0 it is also tested that the string (addr) is null termiated
-441++ 6062 ~            TEST_STRING:    MACRO addr, string, term0
-442++ 6062 ~                    push hl
-443++ 6062 ~                    push de
-444++ 6062 ~                    ld de,.comp_string
-445++ 6062 ~                    ld hl,addr?
-446++ 6062 ~            .loop:
-447++ 6062 ~                    ld a,(de)
-448++ 6062 ~                    ; Check for null termination
-449++ 6062 ~                    or a
-450++ 6062 ~                    jr z,.null_found
-451++ 6062 ~                    cp (hl)
-452++ 6062 ~                    inc de
-453++ 6062 ~                    inc hl
-454++ 6062 ~                    jr z,.loop
-455++ 6062 ~
-456++ 6062 ~            .not_equal:
-457++ 6062 ~                    ; Strings are not equal
-458++ 6062 ~                    pop de
-459++ 6062 ~                    pop hl
-460++ 6062 ~                    call UNITTEST_TEST_READY_FAILURE
-461++ 6062 ~                    jr .end
-462++ 6062 ~
-463++ 6062 ~            .comp_string:
-464++ 6062 ~                    defb string, 0
-465++ 6062 ~
-466++ 6062 ~            .null_found:
-467++ 6062 ~                    ; We are at the end of the compare string.
-468++ 6062 ~                    ; Check if null termination should be compared with the tested string.
-469++ 6062 ~                  IF term0 == 0
-470++ 6062 ~                    cp (hl)
-471++ 6062 ~                    jr nz,.not_equal
-472++ 6062 ~                  ENDIF
-473++ 6062 ~
-474++ 6062 ~                    pop de
-475++ 6062 ~                    pop hl
-476++ 6062 ~            .end:
-477++ 6062 ~                ENDM
-478++ 6062 ~
-479++ 6062 ~
-480++ 6062 ~                ; Initializes the registers with default values.
-481++ 6062 ~                ; Use before the tested function is called.
-482++ 6062 ~                ; After the call the TEST_UNCHANGED_XX tests can be used
-483++ 6062 ~                ; to check if the register was changed.
-484++ 6062 ~            DEFAULT_REGS:    MACRO
-485++ 6062 ~                    ld a,0xAA
-486++ 6062 ~                    ld bc,0xBBCC
-487++ 6062 ~                    ld de,0xDDEE
-488++ 6062 ~                    ld hl,0x8899
-489++ 6062 ~                ENDM
-490++ 6062 ~
-491++ 6062 ~            TEST_UNCHANGED_BC:    MACRO
-492++ 6062 ~                    push hl
-493++ 6062 ~                    ld hl,0xBBCC
-494++ 6062 ~                    or a
-495++ 6062 ~                    sbc hl,bc
+437++ 6062 ~                ; Test two registers for equality.
+438++ 6062 ~                ; Testcase fails if registers are not equal.
+439++ 6062 ~            TEST_DREGS:    MACRO dreg1, dreg2
+440++ 6062 ~                    push de
+441++ 6062 ~                    push hl
+442++ 6062 ~                    push dreg1
+443++ 6062 ~                    push dreg2
+444++ 6062 ~                    pop de
+445++ 6062 ~                    pop hl
+446++ 6062 ~                    or a
+447++ 6062 ~                    sbc hl,de
+448++ 6062 ~                    pop de
+449++ 6062 ~                    pop hl
+450++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+451++ 6062 ~                    nop
+452++ 6062 ~                ENDM
+453++ 6062 ~
+454++ 6062 ~
+455++ 6062 ~                ; Test two registers for unequality.
+456++ 6062 ~                ; Testcase fails if registers are equal.
+457++ 6062 ~            TEST_DREGS_UNEQUAL:    MACRO dreg1, dreg2
+458++ 6062 ~                    push de
+459++ 6062 ~                    push hl
+460++ 6062 ~                    push dreg1
+461++ 6062 ~                    push dreg2
+462++ 6062 ~                    pop de
+463++ 6062 ~                    pop hl
+464++ 6062 ~                    or a
+465++ 6062 ~                    sbc hl,de
+466++ 6062 ~                    pop de
+467++ 6062 ~                    pop hl
+468++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
+469++ 6062 ~                    nop
+470++ 6062 ~                ENDM
+471++ 6062 ~
+472++ 6062 ~
+473++ 6062 ~                ; Tests a memory address for a specific string.
+474++ 6062 ~                ; addr = the tested string
+475++ 6062 ~                ; string = the compared string
+476++ 6062 ~                ; term0 = If 0 it is also tested that the string (addr) is null terminated
+477++ 6062 ~            TEST_STRING:    MACRO addr, string, term0
+478++ 6062 ~                    push af
+479++ 6062 ~                    push hl
+480++ 6062 ~                    push de
+481++ 6062 ~                    ld de,.comp_string
+482++ 6062 ~                    ld hl,addr?
+483++ 6062 ~            .loop:
+484++ 6062 ~                    ld a,(de)
+485++ 6062 ~                    ; Check for null termination
+486++ 6062 ~                    or a
+487++ 6062 ~                    jr z,.null_found
+488++ 6062 ~                    cp (hl)
+489++ 6062 ~                    inc de
+490++ 6062 ~                    inc hl
+491++ 6062 ~                    jr z,.loop
+492++ 6062 ~
+493++ 6062 ~            .not_equal:
+494++ 6062 ~                    ; Strings are not equal
+495++ 6062 ~                    pop de
 496++ 6062 ~                    pop hl
-497++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-498++ 6062 ~                    nop
-499++ 6062 ~                ENDM
+497++ 6062 ~                    pop af
+498++ 6062 ~                    call UNITTEST_TEST_READY_FAILURE
+499++ 6062 ~                    jr .end
 500++ 6062 ~
-501++ 6062 ~            TEST_UNCHANGED_DE:    MACRO
-502++ 6062 ~                    push hl
-503++ 6062 ~                    ld hl,0xDDEE
-504++ 6062 ~                    or a
-505++ 6062 ~                    sbc hl,de
-506++ 6062 ~                    pop hl
-507++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-508++ 6062 ~                    nop
-509++ 6062 ~                ENDM
-510++ 6062 ~
-511++ 6062 ~            TEST_UNCHANGED_HL:    MACRO
-512++ 6062 ~                    push de
-513++ 6062 ~                    ld de,0x8899
-514++ 6062 ~                    or a
-515++ 6062 ~                    sbc hl,de
-516++ 6062 ~                    add hl,de   ; restore hl without affecting the flags
-517++ 6062 ~                    pop de
-518++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-519++ 6062 ~                    nop
-520++ 6062 ~                ENDM
-521++ 6062 ~
-522++ 6062 ~            TEST_UNCHANGED_BC_DE:    MACRO
-523++ 6062 ~                    TEST_UNCHANGED_BC
-524++ 6062 ~                    TEST_UNCHANGED_DE
-525++ 6062 ~                ENDM
-526++ 6062 ~
-527++ 6062 ~            TEST_UNCHANGED_BC_DE_HL:    MACRO
-528++ 6062 ~                    TEST_UNCHANGED_BC_DE
-529++ 6062 ~                    TEST_UNCHANGED_HL
-530++ 6062 ~                ENDM
-531++ 6062 ~
-532++ 6062 ~            TEST_UNCHANGED_A:    MACRO
-533++ 6062 ~                    TEST_A 0xAA
-534++ 6062 ~                ENDM
-535++ 6062 ~
-536++ 6062 ~            TEST_UNCHANGED_B:    MACRO
-537++ 6062 ~                    TEST_REG b, 0xBB
+501++ 6062 ~            .comp_string:
+502++ 6062 ~                    defb string, 0
+503++ 6062 ~
+504++ 6062 ~            .null_found:
+505++ 6062 ~                    ; We are at the end of the compare string.
+506++ 6062 ~                    ; Check if null termination should be compared with the tested string.
+507++ 6062 ~                  IF term0 == 0
+508++ 6062 ~                    cp (hl)
+509++ 6062 ~                    jr nz,.not_equal
+510++ 6062 ~                  ENDIF
+511++ 6062 ~
+512++ 6062 ~                    pop de
+513++ 6062 ~                    pop hl
+514++ 6062 ~                    pop af
+515++ 6062 ~            .end:
+516++ 6062 ~                ENDM
+517++ 6062 ~
+518++ 6062 ~
+519++ 6062 ~                ; Initializes the registers with default values.
+520++ 6062 ~                ; Use before the tested function is called.
+521++ 6062 ~                ; After the call the TEST_UNCHANGED_XX tests can be used
+522++ 6062 ~                ; to check if the register was changed.
+523++ 6062 ~            DEFAULT_REGS:    MACRO
+524++ 6062 ~                    ld a,0xAA
+525++ 6062 ~                    ld bc,0xBBCC
+526++ 6062 ~                    ld de,0xDDEE
+527++ 6062 ~                    ld hl,0x8899
+528++ 6062 ~                ENDM
+529++ 6062 ~
+530++ 6062 ~            TEST_UNCHANGED_BC:    MACRO
+531++ 6062 ~                    push hl
+532++ 6062 ~                    ld hl,0xBBCC
+533++ 6062 ~                    or a
+534++ 6062 ~                    sbc hl,bc
+535++ 6062 ~                    pop hl
+536++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+537++ 6062 ~                    nop
 538++ 6062 ~                ENDM
 539++ 6062 ~
-540++ 6062 ~            TEST_UNCHANGED_C:    MACRO
-541++ 6062 ~                    TEST_REG c, 0xCC
-542++ 6062 ~                ENDM
-543++ 6062 ~
-544++ 6062 ~            TEST_UNCHANGED_D:    MACRO
-545++ 6062 ~                    TEST_REG d, 0xDD
-546++ 6062 ~                ENDM
-547++ 6062 ~
-548++ 6062 ~            TEST_UNCHANGED_E:    MACRO
-549++ 6062 ~                    TEST_REG e, 0xEE
-550++ 6062 ~                ENDM
-551++ 6062 ~
-552++ 6062 ~            TEST_UNCHANGED_H:    MACRO
-553++ 6062 ~                    TEST_REG h, 0x88
-554++ 6062 ~                ENDM
-555++ 6062 ~
-556++ 6062 ~            TEST_UNCHANGED_L:    MACRO
-557++ 6062 ~                    TEST_REG l, 0x99
-558++ 6062 ~                ENDM
-559++ 6062 ~
+540++ 6062 ~            TEST_UNCHANGED_DE:    MACRO
+541++ 6062 ~                    push hl
+542++ 6062 ~                    ld hl,0xDDEE
+543++ 6062 ~                    or a
+544++ 6062 ~                    sbc hl,de
+545++ 6062 ~                    pop hl
+546++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+547++ 6062 ~                    nop
+548++ 6062 ~                ENDM
+549++ 6062 ~
+550++ 6062 ~            TEST_UNCHANGED_HL:    MACRO
+551++ 6062 ~                    push de
+552++ 6062 ~                    ld de,0x8899
+553++ 6062 ~                    or a
+554++ 6062 ~                    sbc hl,de
+555++ 6062 ~                    add hl,de   ; restore hl without affecting the flags
+556++ 6062 ~                    pop de
+557++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+558++ 6062 ~                    nop
+559++ 6062 ~                ENDM
 560++ 6062 ~
-561++ 6062 ~                ; Macro to test flags for Z.
-562++ 6062 ~                ; Testcase fails for NZ.
-563++ 6062 ~            TEST_FLAG_Z:    MACRO
-564++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-565++ 6062 ~                    nop
-566++ 6062 ~                ENDM
-567++ 6062 ~
-568++ 6062 ~
-569++ 6062 ~                ; Macro to test flags for NZ.
-570++ 6062 ~                ; Testcase fails for Z.
-571++ 6062 ~            TEST_FLAG_NZ:    MACRO
-572++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
-573++ 6062 ~                    nop
-574++ 6062 ~                ENDM
-575++ 6062 ~
-576++ 6062 ~
-577++ 6062 ~                ; This macro uses all registers, also the shadow registers.
-578++ 6062 ~            USE_ALL_REGS:    MACRO
-579++ 6062 ~                    ld a,0xCD
-580++ 6062 ~                    ld bc,0xBBCC
-581++ 6062 ~                    ld de,0xDDEE
-582++ 6062 ~                    ld hl,0xFF11
-583++ 6062 ~                    ld ix,0x7788
-584++ 6062 ~                    ld iy,0x99AA
-585++ 6062 ~                    exx
-586++ 6062 ~                    ld a,0xDC
-587++ 6062 ~                    ld bc,0x1122
-588++ 6062 ~                    ld de,0x3344
-589++ 6062 ~                    ld hl,0x5566
-590++ 6062 ~                    exx
-591++ 6062 ~                ENDM
-592++ 6062 ~
-593++ 6062 ~                ; other assemblers end
-594++ 6062 ~                ; -----------------------------------------------------------
-595++ 6062                ENDIF
-596++ 6062
+561++ 6062 ~            TEST_UNCHANGED_BC_DE:    MACRO
+562++ 6062 ~                    TEST_UNCHANGED_BC
+563++ 6062 ~                    TEST_UNCHANGED_DE
+564++ 6062 ~                ENDM
+565++ 6062 ~
+566++ 6062 ~            TEST_UNCHANGED_BC_DE_HL:    MACRO
+567++ 6062 ~                    TEST_UNCHANGED_BC_DE
+568++ 6062 ~                    TEST_UNCHANGED_HL
+569++ 6062 ~                ENDM
+570++ 6062 ~
+571++ 6062 ~            TEST_UNCHANGED_A:    MACRO
+572++ 6062 ~                    TEST_A 0xAA
+573++ 6062 ~                ENDM
+574++ 6062 ~
+575++ 6062 ~            TEST_UNCHANGED_B:    MACRO
+576++ 6062 ~                    TEST_REG b, 0xBB
+577++ 6062 ~                ENDM
+578++ 6062 ~
+579++ 6062 ~            TEST_UNCHANGED_C:    MACRO
+580++ 6062 ~                    TEST_REG c, 0xCC
+581++ 6062 ~                ENDM
+582++ 6062 ~
+583++ 6062 ~            TEST_UNCHANGED_D:    MACRO
+584++ 6062 ~                    TEST_REG d, 0xDD
+585++ 6062 ~                ENDM
+586++ 6062 ~
+587++ 6062 ~            TEST_UNCHANGED_E:    MACRO
+588++ 6062 ~                    TEST_REG e, 0xEE
+589++ 6062 ~                ENDM
+590++ 6062 ~
+591++ 6062 ~            TEST_UNCHANGED_H:    MACRO
+592++ 6062 ~                    TEST_REG h, 0x88
+593++ 6062 ~                ENDM
+594++ 6062 ~
+595++ 6062 ~            TEST_UNCHANGED_L:    MACRO
+596++ 6062 ~                    TEST_REG l, 0x99
+597++ 6062 ~                ENDM
+598++ 6062 ~
+599++ 6062 ~
+600++ 6062 ~                ; Macro to test flags for Z.
+601++ 6062 ~                ; Testcase fails for NZ.
+602++ 6062 ~            TEST_FLAG_Z:    MACRO
+603++ 6062 ~                    call nz,UNITTEST_TEST_READY_FAILURE
+604++ 6062 ~                    nop
+605++ 6062 ~                ENDM
+606++ 6062 ~
+607++ 6062 ~
+608++ 6062 ~                ; Macro to test flags for NZ.
+609++ 6062 ~                ; Testcase fails for Z.
+610++ 6062 ~            TEST_FLAG_NZ:    MACRO
+611++ 6062 ~                    call z,UNITTEST_TEST_READY_FAILURE
+612++ 6062 ~                    nop
+613++ 6062 ~                ENDM
+614++ 6062 ~
+615++ 6062 ~
+616++ 6062 ~                ; This macro uses all registers, also the shadow registers.
+617++ 6062 ~            USE_ALL_REGS:    MACRO
+618++ 6062 ~                    ld a,0xCD
+619++ 6062 ~                    ld bc,0xBBCC
+620++ 6062 ~                    ld de,0xDDEE
+621++ 6062 ~                    ld hl,0xFF11
+622++ 6062 ~                    ld ix,0x7788
+623++ 6062 ~                    ld iy,0x99AA
+624++ 6062 ~                    exx
+625++ 6062 ~                    ld a,0xDC
+626++ 6062 ~                    ld bc,0x1122
+627++ 6062 ~                    ld de,0x3344
+628++ 6062 ~                    ld hl,0x5566
+629++ 6062 ~                    exx
+630++ 6062 ~                ENDM
+631++ 6062 ~
+632++ 6062 ~                ; other assemblers end
+633++ 6062 ~                ; -----------------------------------------------------------
+634++ 6062                ENDIF
+635++ 6062
 # file closed: unit_tests.inc
   8+  6062
   9+  6062
