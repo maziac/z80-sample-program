@@ -1,13 +1,14 @@
 {
     "version": "2.0.0",
-    "command": "make",
     "tasks": [
         {
-            "label": "make default",
+            "label": "sjasmplus",
             "type": "shell",
-            "command": "make",
+            "command": "sjasmplus",
             "args": [
-                "all"
+                "--lst=z80-sample-program.list",
+                "--fullpath",
+                "main.asm"
             ],
             "problemMatcher": {
                 "fileLocation": [

@@ -15,7 +15,6 @@ The intention is to use this as a kind of tutorial for the [z80-debug extension]
 
 If you want to build yourself (not required if you just want to test debugging): 
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus
-- Following utilities are required: make
 
 
 # Building
@@ -23,11 +22,9 @@ If you want to build yourself (not required if you just want to test debugging):
 First if you just want to test debugging with the 'z80-debug' extension there is no need to build/assemble the required files.
 The binaries are included in this repository so that you could also directly start to debug.
 
-However, if you would like to do some changes you need to compile and here is the explanation:
-
-The project includes a 'Makefile'.
-
-To run it just use 'make' in the project's directory or from vscode menu choose 'Run build task...'. A .vscode/tasks.json is also included.
+However, if you would like to do some changes you need to compile.
+From the menu choose "Terminal->Run Build Task..."
+tasks.json is configured such that it will call sjasmplus with the required parameters.
 
 There are several .asm files which are all included in the main.asm file. This file is the one being assembled.
 
