@@ -1256,7 +1256,7 @@
  45   631A F3               di
  46   631B
  47   631B                  ; Setup stack
- 48   631B 31 55 63         ld sp,stack_top
+ 48   631B 31 0B 64         ld sp,stack_top
  49   631E
  50   631E                IF 0
  51   631E ~                ld b,1
@@ -1300,21 +1300,23 @@
  89   6341              ;===========================================================================
  90   6341
  91   6341              ; Stack: this area is reserved for the stack
- 92   6341              STACK_SIZE: equ 10    ; in words
+ 92   6341              STACK_SIZE: equ 100    ; in words
  93   6341
  94   6341
  95   6341              ; Reserve stack space
- 96   6341              stack_bottom:
- 97   6341 00 00 00...      defs    STACK_SIZE*2, 0
- 98   6355 00           stack_top:  defb 0  ; WPMEM
- 99   6356
-100   6356
-101   6356
-102   6356
-103   6356              ; Fill up to 65535
-104   6356 00 00 00...      defs 0x10000 - $
-105   0000
-106   0000
-107   0000                  SAVESNA "z80-sample-program.sna", main
+ 96   6341 00 00            defw 0  ; WPMEM, 2
+ 97   6343              stack_bottom:
+ 98   6343 00 00 00...      defs    STACK_SIZE*2, 0
+ 99   640B              stack_top:
+100   640B 00 00            defw 0  ; WPMEM, 2
+101   640D
+102   640D
+103   640D
+104   640D
+105   640D              ; Fill up to 65535
+106   640D 00 00 00...      defs 0x10000 - $
+107   0000
 108   0000
+109   0000                  SAVESNA "z80-sample-program.sna", main
+110   0000
 # file closed: main.asm
