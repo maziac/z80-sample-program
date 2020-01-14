@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "z80-debug",
+            "type": "dezog",
             "request": "launch",
             "name": "Sample-Program",
             "zhostname": "localhost",
@@ -36,7 +36,7 @@
 
 
        {
-            "type": "z80-debug",
+            "type": "dezog",
             "request": "launch",
             "name": "Unit Tests",
             "unitTests": true,

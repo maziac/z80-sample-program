@@ -23,7 +23,7 @@
     MODULE TestSuite_ClearScreen
 
 ; A unit testcase needs to start with "UT_" (upper case letters).
-; z80-debug will collect all these labels and offer them for execution.
+; DeZog will collect all these labels and offer them for execution.
 UT_clear_screen:
     ; Write some bytes to the screen area
     ld a,0xFF

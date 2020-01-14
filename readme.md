@@ -4,13 +4,13 @@
 
 This is a small Z80 assembler program that just puts some colored lines on the ZX Spectrum's screen.
 
-The intention is to use this as a kind of tutorial for the [z80-debug extension](https://github.com/maziac/z80-debug) for vscode/ZEsarUX.
+The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](https://github.com/maziac/DeZog) for vscode/ZEsarUX.
 
 
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- The [z80-debug adapter extension](https://github.com/maziac/z80-debug)
+- The [DeZog adapter extension](https://github.com/maziac/DeZog)
 - The ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v8.0)
 
 If you want to build yourself (not required if you just want to test debugging): 
@@ -19,7 +19,7 @@ If you want to build yourself (not required if you just want to test debugging):
 
 # Building
 
-First if you just want to test debugging with the 'z80-debug' extension there is no need to build/assemble the required files.
+First if you just want to test debugging with the 'DeZog' extension there is no need to build/assemble the required files.
 The binaries are included in this repository so that you could also directly start to debug.
 
 However, if you would like to do some changes you need to compile.
@@ -76,7 +76,7 @@ The action takes place in the 'main_loop':
 # Unit Tests
 
 The program also includes some unit tests to test the different memory fill subroutines.
-Details how to setup unit tests can be found [here](https://github.com/maziac/z80-debug/blob/master/documentation/UnitTests.md).
+Details how to setup unit tests can be found [here](https://github.com/maziac/DeZog/blob/master/documentation/UnitTests.md).
 
 To run the unit test from a graphical UI (the test explorer) you additionally require the [z80-unit-tests](https://github.com/maziac/z80-unit-tests) extension.
 
