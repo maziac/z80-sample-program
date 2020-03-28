@@ -34,7 +34,7 @@
   4+  6001              ;===========================================================================
   5+  6001
   6+  6001              ; Some constants
-  7+  6001              PAUSE_TIME:     equ 5000   ; 0.5 sec
+  7+  6001              PAUSE_TIME:     equ 500   ; 0.5 sec
   8+  6001
   9+  6001
  10+  6001              ; Pauses for a while.
@@ -1256,53 +1256,61 @@
  45   8000              main:
  46   8000                  ; Disable interrupts
  47   8000 F3               di
- 48   8001 31 F1 80         ld sp,stack_top
+ 48   8001 31 EB 80         ld sp,stack_top
  49   8004
  50   8004                  ; CLS
  51   8004 CD 48 60         call clear_screen
  52   8007 CD 53 60         call clear_backg
  53   800A
  54   800A                  ; Init
- 55   800A 21 42 60     lbl1:    ld hl,fill_colors
- 56   800D 22 40 60         ld (fill_colors_ptr),hl
- 57   8010 11 00 58         ld de,COLOR_SCREEN
- 58   8013
- 59   8013              main_loop:
- 60   8013                  ; fill line with color
- 61   8013 2A 40 60         ld hl,(fill_colors_ptr)
- 62   8016 7E               ld a,(hl)
- 63   8017 CD 18 60         call fill_bckg_line
- 64   801A
- 65   801A                  ; break
- 66   801A D5               push de
- 67   801B 11 88 13         ld de,PAUSE_TIME
- 68   801E CD 01 60         call pause
- 69   8021 D1               pop de
- 70   8022
- 71   8022                  ; next line
- 72   8022 CD 2B 60         call inc_fill_colors_ptr
- 73   8025
- 74   8025 18 EC            jr main_loop
- 75   8027
- 76   8027
- 77   8027
- 78   8027              ;===========================================================================
- 79   8027              ; Stack.
- 80   8027              ;===========================================================================
- 81   8027
- 82   8027              ; Stack: this area is reserved for the stack
- 83   8027              STACK_SIZE: equ 100    ; in words
- 84   8027
- 85   8027
- 86   8027              ; Reserve stack space
- 87   8027 00 00            defw 0  ; WPMEM, 2
- 88   8029              stack_bottom:
- 89   8029 00 00 00...      defs    STACK_SIZE*2, 0
- 90   80F1              stack_top:
- 91   80F1 00 00            defw 0  ; WPMEM, 2
- 92   80F3
- 93   80F3
- 94   80F3
- 95   80F3                  SAVESNA "z80-sample-program.sna", main
- 96   80F3
+ 55   800A              lbl1:
+ 56   800A 21 42 60         ld hl,fill_colors
+ 57   800D 22 40 60         ld (fill_colors_ptr),hl
+ 58   8010 11 00 58         ld de,COLOR_SCREEN
+ 59   8013
+ 60   8013                  ; Enable interrupts
+ 61   8013 FB               ei
+ 62   8014
+ 63   8014              main_loop:
+ 64   8014                  ; fill line with color
+ 65   8014 2A 40 60         ld hl,(fill_colors_ptr)
+ 66   8017 7E               ld a,(hl)
+ 67   8018 CD 18 60         call fill_bckg_line
+ 68   801B
+ 69   801B                  ; break
+ 70   801B               ;   push de
+ 71   801B               ;   ld de,PAUSE_TIME
+ 72   801B               ;   call pause
+ 73   801B               ;   pop de
+ 74   801B
+ 75   801B                  ; Wait on vertical interrupt
+ 76   801B 76               halt
+ 77   801C
+ 78   801C                  ; next line
+ 79   801C CD 2B 60         call inc_fill_colors_ptr
+ 80   801F
+ 81   801F
+ 82   801F 18 F3            jr main_loop
+ 83   8021
+ 84   8021
+ 85   8021
+ 86   8021              ;===========================================================================
+ 87   8021              ; Stack.
+ 88   8021              ;===========================================================================
+ 89   8021
+ 90   8021              ; Stack: this area is reserved for the stack
+ 91   8021              STACK_SIZE: equ 100    ; in words
+ 92   8021
+ 93   8021
+ 94   8021              ; Reserve stack space
+ 95   8021 00 00            defw 0  ; WPMEM, 2
+ 96   8023              stack_bottom:
+ 97   8023 00 00 00...      defs    STACK_SIZE*2, 0
+ 98   80EB              stack_top:
+ 99   80EB 00 00            defw 0  ; WPMEM, 2
+100   80ED
+101   80ED
+102   80ED
+103   80ED                  SAVESNA "z80-sample-program.sna", main
+104   80ED
 # file closed: main.asm

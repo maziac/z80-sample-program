@@ -4,7 +4,7 @@
 ;===========================================================================
 
 ; Some constants
-PAUSE_TIME:     equ 5000   ; 0.5 sec
+PAUSE_TIME:     equ 500   ; 0.5 sec
 
 
 ; Pauses for a while.

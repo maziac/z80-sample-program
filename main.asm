@@ -52,10 +52,14 @@ main:
     call clear_backg
 
     ; Init
-lbl1:    ld hl,fill_colors
+lbl1:    
+    ld hl,fill_colors
     ld (fill_colors_ptr),hl
     ld de,COLOR_SCREEN
     
+    ; Enable interrupts
+    ei
+
 main_loop:
     ; fill line with color
     ld hl,(fill_colors_ptr)
@@ -63,14 +67,18 @@ main_loop:
     call fill_bckg_line
     
     ; break
-    push de
-    ld de,PAUSE_TIME
-    call pause
-    pop de
+ ;   push de
+ ;   ld de,PAUSE_TIME
+ ;   call pause
+ ;   pop de
+
+    ; Wait on vertical interrupt
+    halt
 
     ; next line
     call inc_fill_colors_ptr
 
+ 
     jr main_loop
 
 
