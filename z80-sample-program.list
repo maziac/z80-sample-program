@@ -1251,72 +1251,58 @@
  40   631A              ; Sets up the new interrupt routine, the memory
  41   631A              ; banks and jumps to the start loop.
  42   631A              ;===========================================================================
- 43   631A              main:
- 44   631A                  ; Disable interrupts
- 45   631A F3               di
- 46   631B
- 47   631B                  ; Setup stack
- 48   631B 31 0B 64         ld sp,stack_top
- 49   631E
- 50   631E                IF 0
- 51   631E ~                ld b,1
- 52   631E ~            start_wait_loop:
- 53   631E ~                ld de,PAUSE_TIME
- 54   631E ~                call pause
- 55   631E ~                nop
- 56   631E ~                djnz start_wait_loop
- 57   631E                ENDIF
- 58   631E
- 59   631E                  ; CLS
- 60   631E CD 48 60         call clear_screen
- 61   6321 CD 53 60         call clear_backg
- 62   6324
- 63   6324                  ; Init
- 64   6324 21 42 60     lbl1:    ld hl,fill_colors
- 65   6327 22 40 60         ld (fill_colors_ptr),hl
- 66   632A 11 00 58         ld de,COLOR_SCREEN
- 67   632D
- 68   632D              main_loop:
- 69   632D                  ; fill line with color
- 70   632D 2A 40 60         ld hl,(fill_colors_ptr)
- 71   6330 7E               ld a,(hl)
- 72   6331 CD 18 60         call fill_bckg_line
- 73   6334
- 74   6334                  ; break
- 75   6334 D5               push de
- 76   6335 11 88 13         ld de,PAUSE_TIME
- 77   6338 CD 01 60         call pause
- 78   633B D1               pop de
- 79   633C
- 80   633C                  ; next line
- 81   633C CD 2B 60         call inc_fill_colors_ptr
- 82   633F
- 83   633F 18 EC            jr main_loop
- 84   6341
- 85   6341
- 86   6341
- 87   6341              ;===========================================================================
- 88   6341              ; Stack.
- 89   6341              ;===========================================================================
- 90   6341
- 91   6341              ; Stack: this area is reserved for the stack
- 92   6341              STACK_SIZE: equ 100    ; in words
- 93   6341
- 94   6341
- 95   6341              ; Reserve stack space
- 96   6341 00 00            defw 0  ; WPMEM, 2
- 97   6343              stack_bottom:
- 98   6343 00 00 00...      defs    STACK_SIZE*2, 0
- 99   640B              stack_top:
-100   640B 00 00            defw 0  ; WPMEM, 2
-101   640D
-102   640D
-103   640D
-104   640D
-105   640D              ; Fill up to 65535
-106   640D 00 00 00...      defs 0x10000 - $
-107   0000
-108   0000
-109   0000                  SAVESNA "z80-sample-program.sna", main
-110   0000
+ 43   631A
+ 44   631A               ORG $8000
+ 45   8000              main:
+ 46   8000                  ; Disable interrupts
+ 47   8000 F3               di
+ 48   8001 31 F1 80         ld sp,stack_top
+ 49   8004
+ 50   8004                  ; CLS
+ 51   8004 CD 48 60         call clear_screen
+ 52   8007 CD 53 60         call clear_backg
+ 53   800A
+ 54   800A                  ; Init
+ 55   800A 21 42 60     lbl1:    ld hl,fill_colors
+ 56   800D 22 40 60         ld (fill_colors_ptr),hl
+ 57   8010 11 00 58         ld de,COLOR_SCREEN
+ 58   8013
+ 59   8013              main_loop:
+ 60   8013                  ; fill line with color
+ 61   8013 2A 40 60         ld hl,(fill_colors_ptr)
+ 62   8016 7E               ld a,(hl)
+ 63   8017 CD 18 60         call fill_bckg_line
+ 64   801A
+ 65   801A                  ; break
+ 66   801A D5               push de
+ 67   801B 11 88 13         ld de,PAUSE_TIME
+ 68   801E CD 01 60         call pause
+ 69   8021 D1               pop de
+ 70   8022
+ 71   8022                  ; next line
+ 72   8022 CD 2B 60         call inc_fill_colors_ptr
+ 73   8025
+ 74   8025 18 EC            jr main_loop
+ 75   8027
+ 76   8027
+ 77   8027
+ 78   8027              ;===========================================================================
+ 79   8027              ; Stack.
+ 80   8027              ;===========================================================================
+ 81   8027
+ 82   8027              ; Stack: this area is reserved for the stack
+ 83   8027              STACK_SIZE: equ 100    ; in words
+ 84   8027
+ 85   8027
+ 86   8027              ; Reserve stack space
+ 87   8027 00 00            defw 0  ; WPMEM, 2
+ 88   8029              stack_bottom:
+ 89   8029 00 00 00...      defs    STACK_SIZE*2, 0
+ 90   80F1              stack_top:
+ 91   80F1 00 00            defw 0  ; WPMEM, 2
+ 92   80F3
+ 93   80F3
+ 94   80F3
+ 95   80F3                  SAVESNA "z80-sample-program.sna", main
+ 96   80F3
 # file closed: main.asm

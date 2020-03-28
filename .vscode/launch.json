@@ -8,11 +8,7 @@
             "type": "dezog",
             "request": "launch",
             "name": "Internal Simulator",
-            //"remoteType": "zrcp",
-            //"remoteType": "serial",
-            "remoteType": "zxsim",
-            "zhostname": "localhost",
-            "zport": 10000,
+            "remoteType": "zsim",
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
@@ -21,9 +17,17 @@
                     "mainFile": "main.asm"
                 }
             ],
+            "history": {
+                "reverseDebugInstructionCount": 100000,
+                "spotCount": 10,
+                "codeCoverageEnabled": true
+            },
             "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
+                "-logpoint enable",
+                "-assert enable",
+                "-wpmem enable"
                 //"-sprites",
                 //"-patterns"
             ],
@@ -42,10 +46,10 @@
             "request": "launch",
             "name": "ZEsarUX",
             "remoteType": "zrcp",
-            //"remoteType": "serial",
-            //"remoteType": "zxsim",
-            "zhostname": "localhost",
-            "zport": 10000,
+            "zrcp": {
+                "hostname": "localhost",
+                "port": 10000
+            },
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
@@ -54,6 +58,10 @@
                     "mainFile": "main.asm"
                 }
             ],
+            "history": {
+                "reverseDebugInstructionCount": 100000,
+                "spotCount": 10,
+            },
             "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
@@ -69,57 +77,19 @@
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
-
+    
         {
-            "type": "dezog",
-            "request": "launch",
-            "name": "Serial",
-            //"remoteType": "zrcp",
-            "remoteType": "serial",
-            //"remoteType": "zxsim",
-            "zhostname": "localhost",
-            "zport": 10000,
-            "listFiles": [
-                {
-                    "path": "z80-sample-program.list",
-                    "useFiles": true,
-                    "asm": "sjasmplus",
-                    "mainFile": "main.asm"
-                }
-            ],
-            "startAutomatically": false,
-            "skipInterrupt": true,
-            "commandsAfterLaunch": [
-                //"-sprites",
-                //"-patterns"
-            ],
-            "disassemblerArgs": {
-                "esxdosRst": true
-            },
-            "rootFolder": "${workspaceFolder}",
-            "topOfStack": "stack_top",
-            "load": "z80-sample-program.sna",
-            "smallValuesMaximum": 513,
-            "tmpDir": ".tmp"
-        },
-            
-                
-       {
             "type": "dezog",
             "request": "launch",
             "name": "Unit Tests",
             "unitTests": true,
-            //"remoteType": "zrcp",
-            //"remoteType": "zxnext",
-            "remoteType": "zxsim",
-            "zhostname": "localhost",
-            "zport": 10000,
+            "remoteType": "zsim",
             "resetOnLaunch": true,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-wpmem enable",
                 "-assert enable",
-                //"-logpoint enable", // Enable all logpoints, especially [UNITTEST]
+                "-logpoint enable", // Enable all logpoints, especially [UNITTEST]
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
@@ -132,7 +102,6 @@
                     "mainFile": "main.asm"
                 }
             ],
-    
             "rootFolder": "${workspaceFolder}",
             "load": "z80-sample-program.sna",
             "smallValuesMaximum": 513,

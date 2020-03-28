@@ -40,21 +40,12 @@ screen_top: defb    0   ; WPMEM
 ; Sets up the new interrupt routine, the memory
 ; banks and jumps to the start loop.
 ;===========================================================================
+
+ ORG $8000
 main:
     ; Disable interrupts
     di
- 
-    ; Setup stack
     ld sp,stack_top
-
-  IF 0
-    ld b,1
-start_wait_loop:
-    ld de,PAUSE_TIME
-    call pause
-    nop
-    djnz start_wait_loop
-  ENDIF
  
     ; CLS
     call clear_screen
@@ -99,11 +90,6 @@ stack_bottom:
 stack_top:  
     defw 0  ; WPMEM, 2
 
-
-
-
-; Fill up to 65535
-    defs 0x10000 - $
 
 
     SAVESNA "z80-sample-program.sna", main
