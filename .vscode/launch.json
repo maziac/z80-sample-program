@@ -9,6 +9,9 @@
             "request": "launch",
             "name": "Internal Simulator",
             "remoteType": "zsim",
+            "zsim": {
+                "visualMemory": "ZX48"
+            },
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
@@ -18,7 +21,7 @@
                 }
             ],
             "history": {
-                "reverseDebugInstructionCount": 100000,
+                "reverseDebugInstructionCount": 1000000,
                 "spotCount": 10,
                 "codeCoverageEnabled": true
             },
@@ -59,7 +62,7 @@
                 }
             ],
             "history": {
-                "reverseDebugInstructionCount": 100000,
+                "reverseDebugInstructionCount": 1000000,
                 "spotCount": 10,
             },
             "startAutomatically": false,

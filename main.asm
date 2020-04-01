@@ -59,7 +59,7 @@ lbl1:
     
     ; Enable interrupts
     ei
-
+ 
 main_loop:
     ; fill line with color
     ld hl,(fill_colors_ptr)

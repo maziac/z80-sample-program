@@ -64,7 +64,7 @@ For real emulation and other features (like ZXNext HW emulation) setup [ZEsarUX]
 
 The program is only for educational purposes. It does nothing more than drawing colored lines on the screen.
 
-![](documentation/images/z80_sample_prg_run.gif)
+![](documentation/images/zsim_z80_sample_prg_run.gif)
 
 
 It does so by manipulating the color screen area (0x5800).
@@ -103,6 +103,7 @@ From here you can:
 - hover over register in the asm file: It will show the values and also (if available) the corresponding labels.
 - change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
 
+![](documentation/images/zesarux_z80_sample_prg_run.gif)
 
 
 # Unit Tests
