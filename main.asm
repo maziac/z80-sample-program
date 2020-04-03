@@ -3,6 +3,7 @@
 ;===========================================================================
 
     DEVICE ZXSPECTRUM128
+    ;DEVICE ZXSPECTRUMNEXT
 
 
     ORG 0x4000
@@ -46,7 +47,7 @@ main:
     ; Disable interrupts
     di
     ld sp,stack_top
- 
+
     ; CLS
     call clear_screen
     call clear_backg
@@ -101,4 +102,7 @@ stack_top:
 
 
     SAVESNA "z80-sample-program.sna", main
-    
+    ;SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+    ;SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+    ;SAVENEX AUTO
+    ;SAVENEX CLOSE

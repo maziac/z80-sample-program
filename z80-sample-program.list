@@ -4,29 +4,30 @@
   3   0000              ;===========================================================================
   4   0000
   5   0000                  DEVICE ZXSPECTRUM128
-  6   0000
+  6   0000                  ;DEVICE ZXSPECTRUMNEXT
   7   0000
-  8   0000                  ORG 0x4000
-  9   4000 00 00 00...      defs 0x6000 - $    ; move after screen area
- 10   6000 00           screen_top: defb    0   ; WPMEM
- 11   6001
+  8   0000
+  9   0000                  ORG 0x4000
+ 10   4000 00 00 00...      defs 0x6000 - $    ; move after screen area
+ 11   6000 00           screen_top: defb    0   ; WPMEM
  12   6001
- 13   6001              ;===========================================================================
- 14   6001              ; Persistent watchpoint.
- 15   6001              ; Change WPMEMx (remove the 'x' from WPMEMx) below to activate.
- 16   6001              ; If you do so the program will hit a breakpoint when it tries to
- 17   6001              ; write to the first byte of the 3rd line.
- 18   6001              ; When program breaks in the fill_memory sub routine please hover over hl
- 19   6001              ; to see that it contains 0x5804 or COLOR_SCREEN+64.
- 20   6001              ;===========================================================================
- 21   6001
- 22   6001              ; WPMEMx 0x5840, 1, w
- 23   6001
+ 13   6001
+ 14   6001              ;===========================================================================
+ 15   6001              ; Persistent watchpoint.
+ 16   6001              ; Change WPMEMx (remove the 'x' from WPMEMx) below to activate.
+ 17   6001              ; If you do so the program will hit a breakpoint when it tries to
+ 18   6001              ; write to the first byte of the 3rd line.
+ 19   6001              ; When program breaks in the fill_memory sub routine please hover over hl
+ 20   6001              ; to see that it contains 0x5804 or COLOR_SCREEN+64.
+ 21   6001              ;===========================================================================
+ 22   6001
+ 23   6001              ; WPMEMx 0x5840, 1, w
  24   6001
- 25   6001              ;===========================================================================
- 26   6001              ; Include modules
- 27   6001              ;===========================================================================
- 28   6001                  include "utilities.asm"
+ 25   6001
+ 26   6001              ;===========================================================================
+ 27   6001              ; Include modules
+ 28   6001              ;===========================================================================
+ 29   6001                  include "utilities.asm"
 # file opened: utilities.asm
   1+  6001              ;===========================================================================
   2+  6001              ; utilities.asm
@@ -60,7 +61,7 @@
  30+  600F C9           	ret
  31+  6010
 # file closed: utilities.asm
- 29   6010                  include "fill.asm"
+ 30   6010                  include "fill.asm"
 # file opened: fill.asm
   1+  6010              ;===========================================================================
   2+  6010              ; fill.asm
@@ -146,7 +147,7 @@
  81+  6048
  82+  6048
 # file closed: fill.asm
- 30   6048                  include "clearscreen.asm"
+ 31   6048                  include "clearscreen.asm"
 # file opened: clearscreen.asm
   1+  6048              ;===========================================================================
   2+  6048              ; clearscreen.asm
@@ -189,12 +190,12 @@
  39+  6062
  40+  6062
 # file closed: clearscreen.asm
- 31   6062
- 32   6062                  ; Normally you would assemble the unit tests in a separate target
- 33   6062                  ; in the makefile.
- 34   6062                  ; As this is a very short program and for simplicity the
- 35   6062                  ; unit tests and the main program are assembled in the same binary.
- 36   6062                  include "unit_tests.asm"
+ 32   6062
+ 33   6062                  ; Normally you would assemble the unit tests in a separate target
+ 34   6062                  ; in the makefile.
+ 35   6062                  ; As this is a very short program and for simplicity the
+ 36   6062                  ; unit tests and the main program are assembled in the same binary.
+ 37   6062                  include "unit_tests.asm"
 # file opened: unit_tests.asm
   1+  6062              ;========================================================
   2+  6062              ; unit_tests.asm
@@ -1245,72 +1246,75 @@
 199+  631A
 200+  631A
 # file closed: unit_tests.asm
- 37   631A
- 38   631A              ;===========================================================================
- 39   631A              ; main routine - the code execution starts here.
- 40   631A              ; Sets up the new interrupt routine, the memory
- 41   631A              ; banks and jumps to the start loop.
- 42   631A              ;===========================================================================
- 43   631A
- 44   631A               ORG $8000
- 45   8000              main:
- 46   8000                  ; Disable interrupts
- 47   8000 F3               di
- 48   8001 31 EB 80         ld sp,stack_top
- 49   8004
- 50   8004                  ; CLS
- 51   8004 CD 48 60         call clear_screen
- 52   8007 CD 53 60         call clear_backg
- 53   800A
- 54   800A                  ; Init
- 55   800A              lbl1:
- 56   800A 21 42 60         ld hl,fill_colors
- 57   800D 22 40 60         ld (fill_colors_ptr),hl
- 58   8010 11 00 58         ld de,COLOR_SCREEN
- 59   8013
- 60   8013                  ; Enable interrupts
- 61   8013 FB               ei
- 62   8014
- 63   8014              main_loop:
- 64   8014                  ; fill line with color
- 65   8014 2A 40 60         ld hl,(fill_colors_ptr)
- 66   8017 7E               ld a,(hl)
- 67   8018 CD 18 60         call fill_bckg_line
- 68   801B
- 69   801B                  ; break
- 70   801B               ;   push de
- 71   801B               ;   ld de,PAUSE_TIME
- 72   801B               ;   call pause
- 73   801B               ;   pop de
- 74   801B
- 75   801B                  ; Wait on vertical interrupt
- 76   801B 76               halt
- 77   801C
- 78   801C                  ; next line
- 79   801C CD 2B 60         call inc_fill_colors_ptr
- 80   801F
+ 38   631A
+ 39   631A              ;===========================================================================
+ 40   631A              ; main routine - the code execution starts here.
+ 41   631A              ; Sets up the new interrupt routine, the memory
+ 42   631A              ; banks and jumps to the start loop.
+ 43   631A              ;===========================================================================
+ 44   631A
+ 45   631A               ORG $8000
+ 46   8000              main:
+ 47   8000                  ; Disable interrupts
+ 48   8000 F3               di
+ 49   8001 31 EB 80         ld sp,stack_top
+ 50   8004
+ 51   8004                  ; CLS
+ 52   8004 CD 48 60         call clear_screen
+ 53   8007 CD 53 60         call clear_backg
+ 54   800A
+ 55   800A                  ; Init
+ 56   800A              lbl1:
+ 57   800A 21 42 60         ld hl,fill_colors
+ 58   800D 22 40 60         ld (fill_colors_ptr),hl
+ 59   8010 11 00 58         ld de,COLOR_SCREEN
+ 60   8013
+ 61   8013                  ; Enable interrupts
+ 62   8013 FB               ei
+ 63   8014
+ 64   8014              main_loop:
+ 65   8014                  ; fill line with color
+ 66   8014 2A 40 60         ld hl,(fill_colors_ptr)
+ 67   8017 7E               ld a,(hl)
+ 68   8018 CD 18 60         call fill_bckg_line
+ 69   801B
+ 70   801B                  ; break
+ 71   801B               ;   push de
+ 72   801B               ;   ld de,PAUSE_TIME
+ 73   801B               ;   call pause
+ 74   801B               ;   pop de
+ 75   801B
+ 76   801B                  ; Wait on vertical interrupt
+ 77   801B 76               halt
+ 78   801C
+ 79   801C                  ; next line
+ 80   801C CD 2B 60         call inc_fill_colors_ptr
  81   801F
- 82   801F 18 F3            jr main_loop
- 83   8021
+ 82   801F
+ 83   801F 18 F3            jr main_loop
  84   8021
  85   8021
- 86   8021              ;===========================================================================
- 87   8021              ; Stack.
- 88   8021              ;===========================================================================
- 89   8021
- 90   8021              ; Stack: this area is reserved for the stack
- 91   8021              STACK_SIZE: equ 100    ; in words
- 92   8021
+ 86   8021
+ 87   8021              ;===========================================================================
+ 88   8021              ; Stack.
+ 89   8021              ;===========================================================================
+ 90   8021
+ 91   8021              ; Stack: this area is reserved for the stack
+ 92   8021              STACK_SIZE: equ 100    ; in words
  93   8021
- 94   8021              ; Reserve stack space
- 95   8021 00 00            defw 0  ; WPMEM, 2
- 96   8023              stack_bottom:
- 97   8023 00 00 00...      defs    STACK_SIZE*2, 0
- 98   80EB              stack_top:
- 99   80EB 00 00            defw 0  ; WPMEM, 2
-100   80ED
+ 94   8021
+ 95   8021              ; Reserve stack space
+ 96   8021 00 00            defw 0  ; WPMEM, 2
+ 97   8023              stack_bottom:
+ 98   8023 00 00 00...      defs    STACK_SIZE*2, 0
+ 99   80EB              stack_top:
+100   80EB 00 00            defw 0  ; WPMEM, 2
 101   80ED
 102   80ED
-103   80ED                  SAVESNA "z80-sample-program.sna", main
-104   80ED
+103   80ED
+104   80ED                  SAVESNA "z80-sample-program.sna", main
+105   80ED                  ;SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+106   80ED                  ;SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+107   80ED                  ;SAVENEX AUTO
+108   80ED                  ;SAVENEX CLOSE
 # file closed: main.asm
