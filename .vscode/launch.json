@@ -49,11 +49,12 @@
         {
             "type": "dezog",
             "request": "launch",
-            "name": "ZEsarUX",
-            "remoteType": "zrcp",
+            "name": "CSpect",
+            "remoteType": "cspect",
             "zrcp": {
                 "hostname": "localhost",
-                "port": 10000
+                "port": 11000,
+                "socketTimeout": 50
             },
             "listFiles": [
                 {
@@ -82,13 +83,57 @@
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
-    
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "ZEsarUX",
+            "remoteType": "zrcp",
+            "zrcp": {
+                "hostname": "localhost",
+                "port": 10000,
+                "socketTimeout": 50
+            },
+            "listFiles": [
+                {
+                    "path": "z80-sample-program.list",
+                    "useFiles": true,
+                    "asm": "sjasmplus",
+                    "mainFile": "main.asm"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10,
+            },
+            "startAutomatically": false,
+            "skipInterrupt": true,
+            "commandsAfterLaunch": [
+                //"-sprites",
+                //"-patterns"
+            ],
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stack_top",
+            "load": "z80-sample-program.sna",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
         {
             "type": "dezog",
             "request": "launch",
             "name": "Unit Tests",
             "unitTests": true,
             "remoteType": "zsim",
+            //"remoteType": "zrcp",
+            "zrcp": {
+                "hostname": "localhost",
+                "port": 10000,
+                "socketTimeout": 50
+            },
             "resetOnLaunch": true,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
@@ -108,9 +153,7 @@
                 }
             ],
             "rootFolder": "${workspaceFolder}",
-            "load": "z80-sample-program.sna",
-            "smallValuesMaximum": 513,
-            "tmpDir": ".tmp"
+            "load": "z80-sample-program.sna"
         },
 
     ]
