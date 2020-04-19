@@ -1254,67 +1254,69 @@
  43   631A              ;===========================================================================
  44   631A
  45   631A               ORG $8000
- 46   8000              main:
- 47   8000                  ; Disable interrupts
- 48   8000 F3               di
- 49   8001 31 EB 80         ld sp,stack_top
- 50   8004
- 51   8004                  ; CLS
- 52   8004 CD 48 60         call clear_screen
- 53   8007 CD 53 60         call clear_backg
- 54   800A
- 55   800A                  ; Init
- 56   800A              lbl1:
- 57   800A 21 42 60         ld hl,fill_colors
- 58   800D 22 40 60         ld (fill_colors_ptr),hl
- 59   8010 11 00 58         ld de,COLOR_SCREEN
- 60   8013
- 61   8013                  ; Enable interrupts
- 62   8013 FB               ei
- 63   8014
- 64   8014              main_loop:
- 65   8014                  ; fill line with color
- 66   8014 2A 40 60         ld hl,(fill_colors_ptr)
- 67   8017 7E               ld a,(hl)
- 68   8018 CD 18 60         call fill_bckg_line
- 69   801B
- 70   801B                  ; break
- 71   801B               ;   push de
- 72   801B               ;   ld de,PAUSE_TIME
- 73   801B               ;   call pause
- 74   801B               ;   pop de
- 75   801B
- 76   801B                  ; Wait on vertical interrupt
- 77   801B 76               halt
- 78   801C
- 79   801C                  ; next line
- 80   801C CD 2B 60         call inc_fill_colors_ptr
- 81   801F
+ 46   8000
+ 47   8000              main:
+ 48   8000                  ; Disable interrupts
+ 49   8000 F3               di
+ 50   8001 31 EB 80         ld sp,stack_top
+ 51   8004
+ 52   8004                  ; CLS
+ 53   8004 CD 48 60         call clear_screen
+ 54   8007 CD 53 60         call clear_backg
+ 55   800A
+ 56   800A                  ; Init
+ 57   800A              lbl1:
+ 58   800A 21 42 60         ld hl,fill_colors
+ 59   800D 22 40 60         ld (fill_colors_ptr),hl
+ 60   8010 11 00 58         ld de,COLOR_SCREEN
+ 61   8013
+ 62   8013                  ; Enable interrupts
+ 63   8013 FB               ei
+ 64   8014
+ 65   8014              main_loop:
+ 66   8014                  ; fill line with color
+ 67   8014 2A 40 60         ld hl,(fill_colors_ptr)
+ 68   8017 7E               ld a,(hl)
+ 69   8018 CD 18 60         call fill_bckg_line
+ 70   801B
+ 71   801B                  ; break
+ 72   801B               ;   push de
+ 73   801B               ;   ld de,PAUSE_TIME
+ 74   801B               ;   call pause
+ 75   801B               ;   pop de
+ 76   801B
+ 77   801B                  ; Wait on vertical interrupt
+ 78   801B 76               halt
+ 79   801C
+ 80   801C                  ; next line
+ 81   801C CD 2B 60         call inc_fill_colors_ptr
  82   801F
- 83   801F 18 F3            jr main_loop
- 84   8021
+ 83   801F
+ 84   801F 18 F3            jr main_loop
  85   8021
  86   8021
- 87   8021              ;===========================================================================
- 88   8021              ; Stack.
- 89   8021              ;===========================================================================
- 90   8021
- 91   8021              ; Stack: this area is reserved for the stack
- 92   8021              STACK_SIZE: equ 100    ; in words
- 93   8021
+ 87   8021
+ 88   8021              ;===========================================================================
+ 89   8021              ; Stack.
+ 90   8021              ;===========================================================================
+ 91   8021
+ 92   8021              ; Stack: this area is reserved for the stack
+ 93   8021              STACK_SIZE: equ 100    ; in words
  94   8021
- 95   8021              ; Reserve stack space
- 96   8021 00 00            defw 0  ; WPMEM, 2
- 97   8023              stack_bottom:
- 98   8023 00 00 00...      defs    STACK_SIZE*2, 0
- 99   80EB              stack_top:
-100   80EB 00 00            defw 0  ; WPMEM, 2
-101   80ED
+ 95   8021
+ 96   8021              ; Reserve stack space
+ 97   8021 00 00            defw 0  ; WPMEM, 2
+ 98   8023              stack_bottom:
+ 99   8023 00 00 00...      defs    STACK_SIZE*2, 0
+100   80EB              stack_top:
+101   80EB 00 00            defw 0  ; WPMEM, 2
 102   80ED
 103   80ED
-104   80ED                  SAVESNA "z80-sample-program.sna", main
-105   80ED                  ;SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-106   80ED                  ;SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
-107   80ED                  ;SAVENEX AUTO
-108   80ED                  ;SAVENEX CLOSE
+104   80ED
+105   80ED                  SAVESNA "z80-sample-program.sna", main
+106   80ED                  ;SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+107   80ED                  ;SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+108   80ED                  ;SAVENEX CFG 5   ; Border color
+109   80ED                  ;SAVENEX AUTO
+110   80ED                  ;SAVENEX CLOSE
 # file closed: main.asm

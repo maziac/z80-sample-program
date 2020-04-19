@@ -43,6 +43,7 @@ screen_top: defb    0   ; WPMEM
 ;===========================================================================
 
  ORG $8000
+
 main:
     ; Disable interrupts
     di
@@ -104,5 +105,6 @@ stack_top:
     SAVESNA "z80-sample-program.sna", main
     ;SAVENEX OPEN "z80-sample-program.nex", main, stack_top
     ;SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+    ;SAVENEX CFG 7   ; Border color
     ;SAVENEX AUTO
     ;SAVENEX CLOSE
