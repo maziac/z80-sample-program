@@ -60,6 +60,7 @@ lbl1:
     ld de,COLOR_SCREEN
     
     ; Enable interrupts
+    im 1
     ei
  
 main_loop:

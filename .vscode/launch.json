@@ -16,9 +16,13 @@
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
-                    "useFiles": true,
                     "asm": "sjasmplus",
                     "mainFile": "main.asm"
+                },
+                {
+                    "path": "/Volumes/SDDPCIE2TB/Projects/zxspectrum/vscode/DeZog/data/listings/rom48.list",
+                    "asm": "z80asm",
+                    "srcDirs": []
                 }
             ],
             "history": {
@@ -31,7 +35,7 @@
             "commandsAfterLaunch": [
                 "-logpoint enable",
                 "-assert enable",
-                "-wpmem enable"
+            //    "-wpmem enable"
                 //"-sprites",
                 //"-patterns"
             ],
@@ -71,6 +75,9 @@
             "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
+                //"-logpoint enable",
+                //"-assert enable",
+                "-wpmem enable"
                 //"-sprites",
                 //"-patterns"
             ],
@@ -79,8 +86,8 @@
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            "load": "z80-sample-program.sna",
-            //"load": "z80-sample-program.nex",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -118,7 +125,8 @@
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            "load": "z80-sample-program.sna",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -154,7 +162,8 @@
                 }
             ],
             "rootFolder": "${workspaceFolder}",
-            "load": "z80-sample-program.sna"
+            //"load": //"z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
         },
 
     ]
