@@ -35,9 +35,7 @@
             "commandsAfterLaunch": [
                 "-logpoint enable",
                 "-assert enable",
-            //    "-wpmem enable"
-                //"-sprites",
-                //"-patterns"
+                "-wpmem enable"
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
@@ -58,7 +56,7 @@
             "zrcp": {
                 "hostname": "localhost",
                 "port": 11000,
-                "socketTimeout": 50
+                //"socketTimeout": 50
             },
             "listFiles": [
                 {
@@ -75,19 +73,19 @@
             "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
-                //"-logpoint enable",
-                //"-assert enable",
-                "-wpmem enable"
-                //"-sprites",
-                //"-patterns"
+                "-logpoint enable",
+                "-assert enable",
+                //"-wpmem enable",
+                "-sprites",
+                "-patterns",
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            //"load": "z80-sample-program.sna",
-            "load": "z80-sample-program.nex",
+            "load": "z80-sample-program.sna",
+            //"load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -100,7 +98,7 @@
             "zrcp": {
                 "hostname": "localhost",
                 "port": 10000,
-                "socketTimeout": 50
+                //"socketTimeout": 50
             },
             "listFiles": [
                 {
@@ -117,16 +115,19 @@
             "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
-                //"-sprites",
-                //"-patterns"
+                "-logpoint enable",
+                "-assert enable",
+                "-wpmem enable",
+                "-sprites",
+                "-patterns",
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            //"load": "z80-sample-program.sna",
-            "load": "z80-sample-program.nex",
+            "load": "z80-sample-program.sna",
+            //"load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -137,12 +138,8 @@
             "name": "Unit Tests",
             "unitTests": true,
             "remoteType": "zsim",
+            //"remoteType": "cspect",
             //"remoteType": "zrcp",
-            "zrcp": {
-                "hostname": "localhost",
-                "port": 10000,
-                "socketTimeout": 50
-            },
             "resetOnLaunch": true,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
@@ -162,8 +159,8 @@
                 }
             ],
             "rootFolder": "${workspaceFolder}",
-            //"load": //"z80-sample-program.sna",
-            "load": "z80-sample-program.nex",
+            "load": "z80-sample-program.sna",
+            //"load": "z80-sample-program.nex",
         },
 
     ]

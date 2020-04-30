@@ -2,13 +2,17 @@
 ; main.asm
 ;===========================================================================
 
-    DEVICE ZXSPECTRUM128
-    ;DEVICE ZXSPECTRUMNEXT
+NEX:    equ 0   ;  1=Create nex file, 0=create sna file
 
+    IF NEX == 0
+        DEVICE ZXSPECTRUM128
+    ELSE
+        DEVICE ZXSPECTRUMNEXT
+    ENDIF
 
     ORG 0x4000
     defs 0x6000 - $    ; move after screen area
-screen_top: defb    0   ; WPMEM
+screen_top: defb    0   ; WPMEMx
     
 
 ;===========================================================================
@@ -103,9 +107,13 @@ stack_top:
 
 
 
-    SAVESNA "z80-sample-program.sna", main
-    ;SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-    ;SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
-    ;SAVENEX CFG 7   ; Border color
-    ;SAVENEX AUTO
-    ;SAVENEX CLOSE
+    IF NEX == 0
+        SAVESNA "z80-sample-program.sna", main
+    ELSE
+        SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+        SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+        SAVENEX CFG 7   ; Border color
+        SAVENEX AUTO
+        SAVENEX CLOSE
+    ENDIF
+   

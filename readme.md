@@ -10,10 +10,11 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- [DeZog](https://github.com/maziac/DeZog) (>= v1.0.1)
+- [DeZog](https://github.com/maziac/DeZog) (>= v1.2.5)
 
-The program runs in the internal Z80 simulator but you can **optionally** run it on the ZEsarUX emulator:
-- The ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v8.1)
+The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
+- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v8.1)
+- the CSpect emulator, http://dailly.blogspot.com  (>= v2.12.22)
 
 If you want to build yourself (not required if you just want to test debugging): 
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus
@@ -104,6 +105,10 @@ From here you can:
 - change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
 
 ![](documentation/images/zesarux_z80_sample_prg_run.gif)
+
+
+
+# Debug with CSpect
 
 
 # Unit Tests
