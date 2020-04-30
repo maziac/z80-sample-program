@@ -79,24 +79,24 @@ The action takes place in the 'main_loop':
 
 # Debug with ZEsarUX
 
-![](documentation/images/dbg_select_zesarux.jpg)
-
 To debug the project first start ZEsarUx and enable the remote port (RCP) either by commandline (--enable-remoteprotocol) or from the UI ('Settings->Debug->Remote protocol' to 'Enabled').
 The debug adapter uses the port 10000 which is ZEsarUX default, so you can leave this unchanged.
 
+When ZEsarUX is up and running start debugging from vscode.
+Select ZEsarUX and press the green arrow:
+![](documentation/images/dbg_select_zesarux.jpg)
 
-When ZEsarUX is up and running start debugging from vscode. The "Z80 Debugger" is already configured so pressing the green debug arrow should be enough.
 
 Now the following happens:
 
-1. A socket RCP connection is opened to ZEsarUX.
+1. A socket ZRCP connection is opened to ZEsarUX.
 2. The snapshot (z80-sample-program.sna) is loaded to ZEsarUX.
 3. The breakpoints are reset.
 4. The .list and .label files are read
 5. vscode requests the 'CALL STACK' and the 'VARIABLES'
 6. call stack, disassembly and the registers values are requested from ZEsarUX.
 
-You should be left with a stopped program like for the Z80 simulator. 
+You should be left with a stopped program like before with the Z80 simulator. 
 
 From here you can:
 - step into, step over, step-out
@@ -109,6 +109,35 @@ From here you can:
 
 
 # Debug with CSpect
+
+To debug the project first start [CSpect](http://dailly.blogspot.com) together with the [DeZog/CSpect Plugin](https://github.com/maziac/DeZogPlugin).
+The plugin DLL needs to be placed in the same direct as the CSpect.exe.
+
+Start CSpect from the console to verify that the DeZog/CSpect Plugin has started. You should see an output like "DeZog plugin started." followed by the port address the plugin is listening to.
+
+When ZEsarUX is up and running start debugging from vscode.
+Select ZEsarUX and press the green arrow:
+![](documentation/images/dbg_select_cspect.jpg)
+
+Now the following happens:
+
+1. A socket DZRP connection is opened to ZEsarUX.
+2. The snapshot (z80-sample-program.sna) is loaded to ZEsarUX.
+3. The breakpoints are reset.
+4. The .list and .label files are read
+5. vscode requests the 'CALL STACK' and the 'VARIABLES'
+6. call stack, disassembly and the registers values are requested from CSpect.
+
+You should be left with a stopped program like before with the Z80 simulator. 
+
+From here you can:
+- step into, step over, step-out
+- click on the call stack: It will navigate directly to the asm file.
+- hover over register in the asm file: It will show the values and also (if available) the corresponding labels.
+- change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
+
+![](documentation/images/cspect_z80_sample_prg_run.gif)
+
 
 
 # Unit Tests

@@ -147,7 +147,7 @@
  78+  6042 10 30 08 20      defb RED, YELLOW, BLUE, GREEN, MAGENTA
  78+  6046 18
  79+  6047              fill_colors_end:
- 80+  6047 00               defb 0  ; WPMEMx
+ 80+  6047 00               defb 0  ; WPMEM
  81+  6048
  82+  6048
 # file closed: fill.asm
