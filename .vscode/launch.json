@@ -53,7 +53,7 @@
             "request": "launch",
             "name": "CSpect",
             "remoteType": "cspect",
-            "zrcp": {
+            "cspect": {
                 "hostname": "localhost",
                 "port": 11000,
                 //"socketTimeout": 50
@@ -68,16 +68,15 @@
             ],
             "history": {
                 "reverseDebugInstructionCount": 1000000,
-                "spotCount": 10,
+                "spotCount": 10  
             },
             "startAutomatically": false,
             "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-logpoint enable",
                 "-assert enable",
-                //"-wpmem enable",
-                "-sprites",
-                "-patterns",
+                //"-sprites",
+                //"-patterns",
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
