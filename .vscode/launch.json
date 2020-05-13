@@ -19,11 +19,13 @@
                     "asm": "sjasmplus",
                     "mainFile": "main.asm"
                 },
+                /*
                 {
-                    "path": "/Volumes/SDDPCIE2TB/Projects/zxspectrum/vscode/DeZog/data/listings/rom48.list",
+                    "path": "....../rom48.list",
                     "asm": "z80asm",
                     "srcDirs": []
                 }
+                */
             ],
             "history": {
                 "reverseDebugInstructionCount": 1000000,
@@ -117,8 +119,8 @@
                 "-logpoint enable",
                 "-assert enable",
                 "-wpmem enable",
-                "-sprites",
-                "-patterns",
+                //"-sprites",
+                //"-patterns",
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
