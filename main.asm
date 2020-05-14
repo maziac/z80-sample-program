@@ -64,8 +64,8 @@ lbl1:
     ld de,COLOR_SCREEN
     
     ; Enable interrupts
-    im 1
-    ei
+    ;im 1
+    ;ei
  
 main_loop:
     ; fill line with color
@@ -74,13 +74,13 @@ main_loop:
     call fill_bckg_line
     
     ; break
- ;   push de
- ;   ld de,PAUSE_TIME
- ;   call pause
- ;   pop de
+    push de
+    ld de,PAUSE_TIME
+    call pause
+    pop de
 
-    ; Wait on vertical interrupt
-    halt
+    ; Alternatively wait on vertical interrupt
+ ;   halt
 
     ; next line
     call inc_fill_colors_ptr

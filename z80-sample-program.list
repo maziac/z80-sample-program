@@ -1262,7 +1262,7 @@
  51   8000              main:
  52   8000                  ; Disable interrupts
  53   8000 F3               di
- 54   8001 31 ED 80         ld sp,stack_top
+ 54   8001 31 F1 80         ld sp,stack_top
  55   8004
  56   8004                  ; CLS
  57   8004 CD 48 60         call clear_screen
@@ -1275,57 +1275,57 @@
  64   8010 11 00 58         ld de,COLOR_SCREEN
  65   8013
  66   8013                  ; Enable interrupts
- 67   8013 ED 56            im 1
- 68   8015 FB               ei
- 69   8016
- 70   8016              main_loop:
- 71   8016                  ; fill line with color
- 72   8016 2A 40 60         ld hl,(fill_colors_ptr)
- 73   8019 7E               ld a,(hl)
- 74   801A CD 18 60         call fill_bckg_line
- 75   801D
- 76   801D                  ; break
- 77   801D               ;   push de
- 78   801D               ;   ld de,PAUSE_TIME
- 79   801D               ;   call pause
- 80   801D               ;   pop de
- 81   801D
- 82   801D                  ; Wait on vertical interrupt
- 83   801D 76               halt
- 84   801E
- 85   801E                  ; next line
- 86   801E CD 2B 60         call inc_fill_colors_ptr
- 87   8021
- 88   8021
- 89   8021 18 F3            jr main_loop
- 90   8023
- 91   8023
- 92   8023
- 93   8023              ;===========================================================================
- 94   8023              ; Stack.
- 95   8023              ;===========================================================================
- 96   8023
- 97   8023              ; Stack: this area is reserved for the stack
- 98   8023              STACK_SIZE: equ 100    ; in words
- 99   8023
-100   8023
-101   8023              ; Reserve stack space
-102   8023 00 00            defw 0  ; WPMEM, 2
-103   8025              stack_bottom:
-104   8025 00 00 00...      defs    STACK_SIZE*2, 0
-105   80ED              stack_top:
-106   80ED 00 00            defw 0  ; WPMEM, 2
-107   80EF
-108   80EF
-109   80EF
-110   80EF                  IF NEX == 0
-111   80EF                      SAVESNA "z80-sample-program.sna", main
-112   80EF                  ELSE
-113   80EF ~                    SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-114   80EF ~                    SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
-115   80EF ~                    SAVENEX CFG 7   ; Border color
-116   80EF ~                    SAVENEX AUTO
-117   80EF ~                    SAVENEX CLOSE
-118   80EF                  ENDIF
-119   80EF
+ 67   8013                  ;im 1
+ 68   8013                  ;ei
+ 69   8013
+ 70   8013              main_loop:
+ 71   8013                  ; fill line with color
+ 72   8013 2A 40 60         ld hl,(fill_colors_ptr)
+ 73   8016 7E               ld a,(hl)
+ 74   8017 CD 18 60         call fill_bckg_line
+ 75   801A
+ 76   801A                  ; break
+ 77   801A D5               push de
+ 78   801B 11 F4 01         ld de,PAUSE_TIME
+ 79   801E CD 01 60         call pause
+ 80   8021 D1               pop de
+ 81   8022
+ 82   8022                  ; Alternatively wait on vertical interrupt
+ 83   8022               ;   halt
+ 84   8022
+ 85   8022                  ; next line
+ 86   8022 CD 2B 60         call inc_fill_colors_ptr
+ 87   8025
+ 88   8025
+ 89   8025 18 EC            jr main_loop
+ 90   8027
+ 91   8027
+ 92   8027
+ 93   8027              ;===========================================================================
+ 94   8027              ; Stack.
+ 95   8027              ;===========================================================================
+ 96   8027
+ 97   8027              ; Stack: this area is reserved for the stack
+ 98   8027              STACK_SIZE: equ 100    ; in words
+ 99   8027
+100   8027
+101   8027              ; Reserve stack space
+102   8027 00 00            defw 0  ; WPMEM, 2
+103   8029              stack_bottom:
+104   8029 00 00 00...      defs    STACK_SIZE*2, 0
+105   80F1              stack_top:
+106   80F1 00 00            defw 0  ; WPMEM, 2
+107   80F3
+108   80F3
+109   80F3
+110   80F3                  IF NEX == 0
+111   80F3                      SAVESNA "z80-sample-program.sna", main
+112   80F3                  ELSE
+113   80F3 ~                    SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+114   80F3 ~                    SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+115   80F3 ~                    SAVENEX CFG 7   ; Border color
+116   80F3 ~                    SAVENEX AUTO
+117   80F3 ~                    SAVENEX CLOSE
+118   80F3                  ENDIF
+119   80F3
 # file closed: main.asm
