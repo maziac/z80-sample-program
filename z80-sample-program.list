@@ -1314,18 +1314,19 @@
 103   8029              stack_bottom:
 104   8029 00 00 00...      defs    STACK_SIZE*2, 0
 105   80F1              stack_top:
-106   80F1 00 00            defw 0  ; WPMEM, 2
-107   80F3
-108   80F3
-109   80F3
-110   80F3                  IF NEX == 0
-111   80F3                      SAVESNA "z80-sample-program.sna", main
-112   80F3                  ELSE
-113   80F3 ~                    SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-114   80F3 ~                    SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
-115   80F3 ~                    SAVENEX CFG 7   ; Border color
-116   80F3 ~                    SAVENEX AUTO
-117   80F3 ~                    SAVENEX CLOSE
-118   80F3                  ENDIF
-119   80F3
+106   80F1 00 00            defw 0
+107   80F3 00 00            defw 0  ; WPMEM, 2
+108   80F5
+109   80F5
+110   80F5
+111   80F5                  IF NEX == 0
+112   80F5                      SAVESNA "z80-sample-program.sna", main
+113   80F5                  ELSE
+114   80F5 ~                    SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+115   80F5 ~                    SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+116   80F5 ~                    SAVENEX CFG 7   ; Border color
+117   80F5 ~                    SAVENEX AUTO
+118   80F5 ~                    SAVENEX CLOSE
+119   80F5                  ENDIF
+120   80F5
 # file closed: main.asm
