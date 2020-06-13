@@ -41,7 +41,7 @@ UT_clear_screen:
     TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE-1, 0
     
     TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE, 0xFF
-    ret  
+ TC_END  
 
 
 ; Tests filling the background.
@@ -63,7 +63,7 @@ UT_fill_backg:
     TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE-1, 128
     
     TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE, 0xFF
-    ret  
+ TC_END  
 
 
 ; Tests clearing the background.
@@ -84,7 +84,7 @@ UT_clear_backg:
     TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE-1, 0
     
     TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE, 0xFF
-    ret  
+ TC_END  
 
     ENDMODULE 
 
@@ -115,7 +115,7 @@ UT_fill_memory:
     TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE-1, 22
     
     TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE, 0xFF
-    ret    
+ TC_END  
      
 
 FILL_MEMORY_SIZE:   equ 10
@@ -143,8 +143,7 @@ UT_fill_bckg_line_normal:
 
     ; Test that de points to the next line
     TEST_DREG de, COLOR_SCREEN+32
-
-    ret
+ TC_END  
 
 ; Test wrap around.
 UT_fill_bckg_line_wrap_around:  
@@ -164,8 +163,7 @@ UT_fill_bckg_line_wrap_around:
 
     ; Test that de points to the first line (wrap around)
     TEST_DREG de, COLOR_SCREEN
-
-    ret
+ TC_END  
 
 
 ; Test wrap around.
@@ -192,8 +190,7 @@ UT_fill_colors_ptr:
     call inc_fill_colors_ptr
     ; Test that pointer wraps around and points to first line
     TEST_MEMORY_WORD fill_colors_ptr, fill_colors
-
-    ret
+ TC_END  
 
     ENDMODULE 
 
