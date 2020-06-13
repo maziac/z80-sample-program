@@ -195,8 +195,8 @@
  40+  6062
 # file closed: clearscreen.asm
  36   6062
- 37   6062                  include "dezog/coop.asm"
-# file opened: dezog/coop.asm
+ 37   6062                  include "dezog.asm"
+# file opened: dezog.asm
   1+  6062              ;===========================================================================
   2+  6062              ; coop.asm
   3+  6062              ;
@@ -224,7 +224,7 @@
  25+  6062              ; To avoid switching banks, this is code that should be compiled together
  26+  6062              ; with the debugged program.
  27+  6062              ; Changes:
- 28+  6062              ;  No register. 4 bytes on the stack are used including the call to this
+ 28+  6062              ;  No register. 8 bytes on the stack are used including the call to this
  29+  6062              ;  function.
  30+  6062              ; Duration:
  31+  6062              ;  T-States=81 (with CALL), 2.32us@3.5MHz
@@ -252,7 +252,7 @@
  53+  606E ED 8A 00 00  	push 0x0000
  54+  6072 C3 00 00     	jp 0x0000
  55+  6075
-# file closed: dezog/coop.asm
+# file closed: dezog.asm
  38   6075
  39   6075                  ; Normally you would assemble the unit tests in a separate target
  40   6075                  ; in the makefile.

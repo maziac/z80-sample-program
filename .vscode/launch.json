@@ -156,8 +156,6 @@
             "commandsAfterLaunch": [
                 "-logpoint enable",
                 "-assert enable",
-                //"-sprites",
-                //"-patterns",
             ],
             "disassemblerArgs": {
                 "esxdosRst": true

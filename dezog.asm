@@ -25,7 +25,7 @@ UART_RX_FIFO_EMPTY: equ 0   ; 0=empty, 1=not empty
 ; To avoid switching banks, this is code that should be compiled together 
 ; with the debugged program.
 ; Changes:
-;  No register. 4 bytes on the stack are used including the call to this 
+;  No register. 8 bytes on the stack are used including the call to this 
 ;  function.
 ; Duration:
 ;  T-States=81 (with CALL), 2.32us@3.5MHz

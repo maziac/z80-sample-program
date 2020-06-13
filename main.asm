@@ -34,7 +34,7 @@ screen_top: defb    0   ; WPMEMx
     include "fill.asm"
     include "clearscreen.asm"
 
-    include "dezog/coop.asm"
+    include "dezog.asm"
 
     ; Normally you would assemble the unit tests in a separate target
     ; in the makefile.
