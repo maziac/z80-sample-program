@@ -2,7 +2,7 @@
 ; main.asm
 ;===========================================================================
 
-NEX:    equ 0   ;  1=Create nex file, 0=create sna file
+NEX:    equ 1   ;  1=Create nex file, 0=create sna file
 
     IF NEX == 0
         DEVICE ZXSPECTRUM128
@@ -34,12 +34,15 @@ screen_top: defb    0   ; WPMEMx
     include "fill.asm"
     include "clearscreen.asm"
 
+    include "dezog/coop.asm"
+
     ; Normally you would assemble the unit tests in a separate target
     ; in the makefile.
     ; As this is a very short program and for simplicity the
     ; unit tests and the main program are assembled in the same binary.
     include "unit_tests.asm"
 
+    
 ;===========================================================================
 ; main routine - the code execution starts here.
 ; Sets up the new interrupt routine, the memory
@@ -48,10 +51,59 @@ screen_top: defb    0   ; WPMEMx
 
  ORG $8000
 
+sub: 
+    nop
+    nop
+    ret
+
 main:
     ; Disable interrupts
     di
+    ei
     ld sp,stack_top
+
+ IF 01
+
+    call sub
+    
+    ld de, 777
+    
+    ld a, 1
+.loop: 
+    nop
+    nop
+    call dezog_check_for_message
+    nop
+
+    inc a
+
+    nop
+    inc a
+    nop
+    nop
+
+    nop
+    nop
+    nop
+
+    nop
+    nop
+    nop
+    nop
+    nop
+
+    jr .loop
+
+    dec de
+    ld a,d
+    or e
+    jr nz,.loop
+    
+    nop
+    nop
+
+
+ ENDIF
 
     ; CLS
     call clear_screen
@@ -67,6 +119,7 @@ lbl1:
     ;im 1
     ;ei
  
+   di
 main_loop:
     ; fill line with color
     ld hl,(fill_colors_ptr)
@@ -83,6 +136,7 @@ main_loop:
  ;   halt
 
     ; next line
+    nop
     call inc_fill_colors_ptr
 
  
@@ -94,6 +148,26 @@ main_loop:
 ; Stack. 
 ;===========================================================================
 
+ ld a,(rb_continue.bp1_address)
+
+
+    STRUCT RECEIVE_BUFFER_CMD_CONTINUE
+bp1_enable          BYTE    0
+bp1_address         WORD    0
+bp2_enable          BYTE    0
+bp2_address         WORD    0
+    ENDS
+
+receive_buffer:
+    defs 6
+.payload
+    defs 50
+
+; definie alias labels for "receive_buffer" to access specific-command fields
+rb_continue    RECEIVE_BUFFER_CMD_CONTINUE = receive_buffer.payload
+
+
+
 ; Stack: this area is reserved for the stack
 STACK_SIZE: equ 100    ; in words
 
@@ -103,7 +177,7 @@ STACK_SIZE: equ 100    ; in words
 stack_bottom:
     defs    STACK_SIZE*2, 0
 stack_top:  
-    defw 0  
+    ;defw 0  
     defw 0  ; WPMEM, 2
 
 

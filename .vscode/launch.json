@@ -44,8 +44,8 @@
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            "load": "z80-sample-program.sna",
-            //"load": "z80-sample-program.nex",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -63,7 +63,6 @@
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
-                    "useFiles": true,
                     "asm": "sjasmplus",
                     "mainFile": "main.asm"
                 }
@@ -85,8 +84,8 @@
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            "load": "z80-sample-program.sna",
-            //"load": "z80-sample-program.nex",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -104,7 +103,6 @@
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
-                    "useFiles": true,
                     "asm": "sjasmplus",
                     "mainFile": "main.asm"
                 }
@@ -127,8 +125,47 @@
             },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
-            "load": "z80-sample-program.sna",
-            //"load": "z80-sample-program.nex",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "ZXNext",
+            "remoteType": "serial",
+            "serial": {
+                //"port": 13000,
+                "socketTimeout": 50
+            },
+            "listFiles": [
+                {
+                    "path": "z80-sample-program.list",
+                    "asm": "sjasmplus",
+                    "mainFile": "main.asm"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10
+            },
+            "startAutomatically": false,
+            "skipInterrupt": true,
+            "commandsAfterLaunch": [
+                "-logpoint enable",
+                "-assert enable",
+                //"-sprites",
+                //"-patterns",
+            ],
+            "disassemblerArgs": {
+                "esxdosRst": true
+            },
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stack_top",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
@@ -154,14 +191,13 @@
             "listFiles": [
                 {
                     "path": "z80-sample-program.list",
-                    "useFiles": true,
                     "asm": "sjasmplus",
                     "mainFile": "main.asm"
                 }
             ],
             "rootFolder": "${workspaceFolder}",
-            "load": "z80-sample-program.sna",
-            //"load": "z80-sample-program.nex",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
         },
 
     ]

@@ -7,6 +7,8 @@
             "command": "sjasmplus",
             "args": [
                 "--lst=z80-sample-program.list",
+                "--lstlab",
+                "--sym=z80-sample-program.labels",
                 "--fullpath",
                 "main.asm"
             ],
