@@ -47,9 +47,32 @@ _dezog_start_cmd_loop:
 	
 	; Jump to DivMMC code. The code is automatically paged in by branching
 	; to address 0x0000.
+
+	; Push a 1=Execute "Function: receive command"
+	push 0x0100
+
 	; Push a 0x0000 on the stack. With this the call is distinguished from
 	; a SW breakpoint.
 	; (Above is already the return address.)
+	push 0x0000
+	jp 0x0000
+
+
+;===========================================================================
+; Initializes the given bank with debugger code.
+; 8 bytes at address 0 and 14 bytes at address 66h.
+; Parameters:
+;   A = bank to initialize.
+; Changes:
+;   -
+; ===========================================================================
+dezog_init_slot0_bank:
+	; Put the bank as aprameter on the stack
+	push af
+	; Push a 2=Execute "Function: init_slot0_bank"
+	push 0x0200
+	; Push a 0x0000 on the stack. With this the call is distinguished from
+	; a SW breakpoint.
 	push 0x0000
 	jp 0x0000
 
