@@ -15,29 +15,6 @@ pause:
 	push af
 	push bc
 
- IF 01
-        ld      bc,0x243B
-        ld      a,0x1F
-        out     (c),a       ; select NextReg $1F
-        inc     b           ; BC = TBBLUE_REGISTER_ACCESS_P_253B
-    ; if already at scanline 192, then wait extra whole frame (for super-fast game loops)
-.cantStartAt192:
-        in      a,(c)       ; read the raster line LSB
-        cp      192
-        jr      z,.cantStartAt192
-    ; if not yet at scanline 192, wait for it ... wait for it ...
-.waitLoop:
-        in      a,(c)       ; read the raster line LSB
-        cp      192
-        jr      nz,.waitLoop
-
-
-	pop bc
-	pop af
-	ret
-
- ENDIF
-
 pause_loop_l2:
 	ld b,26
 pause_loop_l1:
