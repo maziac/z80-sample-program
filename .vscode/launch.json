@@ -135,8 +135,8 @@
             "type": "dezog",
             "request": "launch",
             "name": "ZXNext",
-            "remoteType": "serial",
-            "serial": {
+            "remoteType": "zxnext",
+            "zxnext": {
                 //"port": 13000,
                 "socketTimeout": 50
             },

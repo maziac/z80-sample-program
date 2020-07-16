@@ -59,51 +59,7 @@ sub:
 main:
     ; Disable interrupts
     di
-    ei
     ld sp,stack_top
-
- IF 01
-
-    call sub
-    
-    ld de, 777
-    
-    ld a, 1
-.loop: 
-    nop
-    nop
-    call dezog_check_for_message
-    nop
-
-    inc a
-
-    nop
-    inc a
-    nop
-    nop
-
-    nop
-    nop
-    nop
-
-    nop
-    nop
-    nop
-    nop
-    nop
-
-    jr .loop
-
-    dec de
-    ld a,d
-    or e
-    jr nz,.loop
-    
-    nop
-    nop
-
-
- ENDIF
 
     ; CLS
     call clear_screen
@@ -116,10 +72,9 @@ lbl1:
     ld de,COLOR_SCREEN
     
     ; Enable interrupts
-    ;im 1
-    ;ei
+    im 1
+    ei
  
-   di
 main_loop:
     ; fill line with color
     ld hl,(fill_colors_ptr)
@@ -127,21 +82,18 @@ main_loop:
     call fill_bckg_line
     
     ; break
-    push de
-    ld de,PAUSE_TIME
-    call pause
-    pop de
+    ;push de
+    ;ld de,PAUSE_TIME
+    ;call pause
+    ;pop de
 
     ; Alternatively wait on vertical interrupt
- ;   halt
+    halt
 
     ; next line
-    nop
     call inc_fill_colors_ptr
-
  
     jr main_loop
-
 
 
 ;===========================================================================

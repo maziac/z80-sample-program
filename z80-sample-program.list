@@ -45,1499 +45,1593 @@
  10+  6001              ; Pauses for a while.
  11+  6001              ; de: wait time, ca. de*0.1ms
  12+  6001              pause:
- 13+  6001 C9           	ret	; comment this line if you would like to see a pause between drawing of the lines.
- 14+  6002
- 15+  6002 F5           	push af
- 16+  6003 C5           	push bc
- 17+  6004
- 18+  6004              pause_loop_l2:
- 19+  6004 06 1A        	ld b,26
- 20+  6006              pause_loop_l1:
- 21+  6006 10 FE        	djnz pause_loop_l1 ; 1 cycle should be roughly 100us=0.1ms
- 22+  6008
- 23+  6008 1B           	dec de
- 24+  6009 7A           	ld a,d
- 25+  600A B3           	or e
- 26+  600B 20 F7        	jr nz,pause_loop_l2
- 27+  600D
- 28+  600D C1           	pop bc
- 29+  600E F1           	pop af
- 30+  600F C9           	ret
- 31+  6010
+ 13+  6001              ;	ret	; comment this line if you would like to see a pause between drawing of the lines.
+ 14+  6001
+ 15+  6001 F5           	push af
+ 16+  6002 C5           	push bc
+ 17+  6003
+ 18+  6003               IF 01
+ 19+  6003 01 3B 24             ld      bc,0x243B
+ 20+  6006 3E 1F                ld      a,0x1F
+ 21+  6008 ED 79                out     (c),a       ; select NextReg $1F
+ 22+  600A 04                   inc     b           ; BC = TBBLUE_REGISTER_ACCESS_P_253B
+ 23+  600B                  ; if already at scanline 192, then wait extra whole frame (for super-fast game loops)
+ 24+  600B              .cantStartAt192:
+ 25+  600B ED 78                in      a,(c)       ; read the raster line LSB
+ 26+  600D FE C0                cp      192
+ 27+  600F 28 FA                jr      z,.cantStartAt192
+ 28+  6011                  ; if not yet at scanline 192, wait for it ... wait for it ...
+ 29+  6011              .waitLoop:
+ 30+  6011 ED 78                in      a,(c)       ; read the raster line LSB
+ 31+  6013 FE C0                cp      192
+ 32+  6015 20 FA                jr      nz,.waitLoop
+ 33+  6017
+ 34+  6017
+ 35+  6017 C1           	pop bc
+ 36+  6018 F1           	pop af
+ 37+  6019 C9           	ret
+ 38+  601A
+ 39+  601A               ENDIF
+ 40+  601A
+ 41+  601A              pause_loop_l2:
+ 42+  601A 06 1A        	ld b,26
+ 43+  601C              pause_loop_l1:
+ 44+  601C 10 FE        	djnz pause_loop_l1 ; 1 cycle should be roughly 100us=0.1ms
+ 45+  601E
+ 46+  601E 1B           	dec de
+ 47+  601F 7A           	ld a,d
+ 48+  6020 B3           	or e
+ 49+  6021 20 F7        	jr nz,pause_loop_l2
+ 50+  6023
+ 51+  6023 C1           	pop bc
+ 52+  6024 F1           	pop af
+ 53+  6025 C9           	ret
+ 54+  6026
+ 55+  6026
+ 56+  6026
+ 57+  6026
+ 58+  6026              ;===========================================================================
+ 59+  6026              ; Writes a color to the border and waits on keypress
+ 60+  6026              ; of SPACE.
+ 61+  6026              ; Used for visual debugging.
+ 62+  6026              ; Changes:
+ 63+  6026              ;   A
+ 64+  6026              ;===========================================================================
+ 65+  6026              	MACRO WAIT_SPACE color?
+ 66+  6026 ~            	ld a,color?
+ 67+  6026 ~            	out (BORDER),a
+ 68+  6026 ~            	; Wait on key press
+ 69+  6026 ~            .not_pressed:
+ 70+  6026 ~            	ld a,HIGH PORT_KEYB_BNMSHIFTSPACE
+ 71+  6026 ~            	in a,(LOW PORT_KEYB_BNMSHIFTSPACE)
+ 72+  6026 ~            	bit 0,a	; SPACE
+ 73+  6026 ~            	jr nz,.not_pressed
+ 74+  6026 ~            	; Wait on key release
+ 75+  6026 ~            .pressed:
+ 76+  6026 ~            	ld a,HIGH PORT_KEYB_BNMSHIFTSPACE
+ 77+  6026 ~            	in a,(LOW PORT_KEYB_BNMSHIFTSPACE)
+ 78+  6026 ~            	bit 0,a	; SPACE
+ 79+  6026 ~            	jr z,.pressed
+ 80+  6026              	ENDM
+ 81+  6026
 # file closed: utilities.asm
- 34   6010                  include "fill.asm"
+ 34   6026                  include "fill.asm"
 # file opened: fill.asm
-  1+  6010              ;===========================================================================
-  2+  6010              ; fill.asm
-  3+  6010              ; Submodule with memory fill routines.
-  4+  6010              ;===========================================================================
-  5+  6010
-  6+  6010              ; Some constants
-  7+  6010              BCKG_LINE_SIZE:  equ     32
-  8+  6010
-  9+  6010              ; Colors
- 10+  6010              BLACK:          equ 0<<3
- 11+  6010              BLUE:           equ 1<<3
- 12+  6010              RED:            equ 2<<3
- 13+  6010              MAGENTA:        equ 3<<3
- 14+  6010              GREEN:          equ 4<<3
- 15+  6010              CYAN:           equ 5<<3
- 16+  6010              YELLOW:         equ 6<<3
- 17+  6010              WHITE:          equ 7<<3
- 18+  6010
- 19+  6010
- 20+  6010              ; Fills a memory area with a certain value.
- 21+  6010              ; a = contains the fill value.
- 22+  6010              ; hl = address to fill
- 23+  6010              ; bc = size
- 24+  6010              fill_memory:
- 25+  6010 77               ld (hl),a
- 26+  6011 5D               ld e,l
- 27+  6012 54               ld d,h
- 28+  6013 13               inc de
- 29+  6014 0B               dec bc
- 30+  6015 ED B0            ldir
- 31+  6017 C9               ret
- 32+  6018
- 33+  6018
- 34+  6018              ; Fills a background line with a color.
- 35+  6018              ; IN:
- 36+  6018              ; a = color
- 37+  6018              ; de = points to background screen
- 38+  6018              ; OUT:
- 39+  6018              ; de = pointing to next line
- 40+  6018              fill_bckg_line:
- 41+  6018 01 20 00         ld bc,BCKG_LINE_SIZE
- 42+  601B 6B               ld l,e
- 43+  601C 62               ld h,d
- 44+  601D CD 10 60         call fill_memory
- 45+  6020                  ; check that destination address is still in screen background
- 46+  6020 21 FF 5A         ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE-1
- 47+  6023 B7               or a    ; clear carry
- 48+  6024 ED 52            sbc hl,de ; compare
- 49+  6026 F0               ret p
- 50+  6027                  ; ld start address
- 51+  6027 11 00 58         ld de,COLOR_SCREEN
- 52+  602A C9               ret
- 53+  602B
- 54+  602B
- 55+  602B              ; Increments the fill_colors_ptr and resets it if necessary.
- 56+  602B              inc_fill_colors_ptr:
- 57+  602B 2A 40 60         ld hl,(fill_colors_ptr)
- 58+  602E 23               inc hl
- 59+  602F 22 40 60         ld (fill_colors_ptr),hl
- 60+  6032
- 61+  6032                  ; check if out of range
- 62+  6032 01 47 60         ld bc,fill_colors_end
- 63+  6035 B7               or a    ; clear carry
- 64+  6036 ED 42            sbc hl,bc ; compare
- 65+  6038 F8               ret m
- 66+  6039
- 67+  6039                  ; reset
- 68+  6039 21 42 60         ld hl,fill_colors
- 69+  603C 22 40 60         ld (fill_colors_ptr),hl
- 70+  603F C9               ret
- 71+  6040
- 72+  6040
- 73+  6040              ; Pointer to fill colors.
- 74+  6040 00 00        fill_colors_ptr:    defw 0
- 75+  6042
- 76+  6042              ; Contains the colors for the lines. Each entry represnts the color for one line.
- 77+  6042              fill_colors:
- 78+  6042 10 30 08 20      defb RED, YELLOW, BLUE, GREEN, MAGENTA
- 78+  6046 18
- 79+  6047              fill_colors_end:
- 80+  6047 00               defb 0  ; WPMEM
- 81+  6048
- 82+  6048
+  1+  6026              ;===========================================================================
+  2+  6026              ; fill.asm
+  3+  6026              ; Submodule with memory fill routines.
+  4+  6026              ;===========================================================================
+  5+  6026
+  6+  6026              ; Some constants
+  7+  6026              BCKG_LINE_SIZE:  equ     32
+  8+  6026
+  9+  6026              ; Colors
+ 10+  6026              BLACK:          equ 0<<3
+ 11+  6026              BLUE:           equ 1<<3
+ 12+  6026              RED:            equ 2<<3
+ 13+  6026              MAGENTA:        equ 3<<3
+ 14+  6026              GREEN:          equ 4<<3
+ 15+  6026              CYAN:           equ 5<<3
+ 16+  6026              YELLOW:         equ 6<<3
+ 17+  6026              WHITE:          equ 7<<3
+ 18+  6026
+ 19+  6026
+ 20+  6026              ; Fills a memory area with a certain value.
+ 21+  6026              ; a = contains the fill value.
+ 22+  6026              ; hl = address to fill
+ 23+  6026              ; bc = size
+ 24+  6026              fill_memory:
+ 25+  6026 77               ld (hl),a
+ 26+  6027 5D               ld e,l
+ 27+  6028 54               ld d,h
+ 28+  6029 13               inc de
+ 29+  602A 0B               dec bc
+ 30+  602B ED B0            ldir
+ 31+  602D C9               ret
+ 32+  602E
+ 33+  602E
+ 34+  602E              ; Fills a background line with a color.
+ 35+  602E              ; IN:
+ 36+  602E              ; a = color
+ 37+  602E              ; de = points to background screen
+ 38+  602E              ; OUT:
+ 39+  602E              ; de = pointing to next line
+ 40+  602E              fill_bckg_line:
+ 41+  602E 01 20 00         ld bc,BCKG_LINE_SIZE
+ 42+  6031 6B               ld l,e
+ 43+  6032 62               ld h,d
+ 44+  6033 CD 26 60         call fill_memory
+ 45+  6036                  ; check that destination address is still in screen background
+ 46+  6036 21 FF 5A         ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE-1
+ 47+  6039 B7               or a    ; clear carry
+ 48+  603A ED 52            sbc hl,de ; compare
+ 49+  603C F0               ret p
+ 50+  603D                  ; ld start address
+ 51+  603D 11 00 58         ld de,COLOR_SCREEN
+ 52+  6040 C9               ret
+ 53+  6041
+ 54+  6041
+ 55+  6041              ; Increments the fill_colors_ptr and resets it if necessary.
+ 56+  6041              inc_fill_colors_ptr:
+ 57+  6041 2A 56 60         ld hl,(fill_colors_ptr)
+ 58+  6044 23               inc hl
+ 59+  6045 22 56 60         ld (fill_colors_ptr),hl
+ 60+  6048
+ 61+  6048                  ; check if out of range
+ 62+  6048 01 5D 60         ld bc,fill_colors_end
+ 63+  604B B7               or a    ; clear carry
+ 64+  604C ED 42            sbc hl,bc ; compare
+ 65+  604E F8               ret m
+ 66+  604F
+ 67+  604F                  ; reset
+ 68+  604F 21 58 60         ld hl,fill_colors
+ 69+  6052 22 56 60         ld (fill_colors_ptr),hl
+ 70+  6055 C9               ret
+ 71+  6056
+ 72+  6056
+ 73+  6056              ; Pointer to fill colors.
+ 74+  6056 00 00        fill_colors_ptr:    defw 0
+ 75+  6058
+ 76+  6058              ; Contains the colors for the lines. Each entry represnts the color for one line.
+ 77+  6058              fill_colors:
+ 78+  6058 10 30 08 20      defb RED, YELLOW, BLUE, GREEN, MAGENTA
+ 78+  605C 18
+ 79+  605D              fill_colors_end:
+ 80+  605D 00               defb 0  ; WPMEM
+ 81+  605E
+ 82+  605E
 # file closed: fill.asm
- 35   6048                  include "clearscreen.asm"
+ 35   605E                  include "clearscreen.asm"
 # file opened: clearscreen.asm
-  1+  6048              ;===========================================================================
-  2+  6048              ; clearscreen.asm
-  3+  6048              ; Submodule to clear the entire screen.
-  4+  6048              ;===========================================================================
-  5+  6048
-  6+  6048              ; Some constants
-  7+  6048              SCREEN:         equ 0x4000
-  8+  6048              SCREEN_SIZE:    equ 0x1800
-  9+  6048
- 10+  6048              COLOR_SCREEN:       equ 0x5800
- 11+  6048              COLOR_SCREEN_SIZE:  equ 0x0300
- 12+  6048
- 13+  6048
- 14+  6048              ; Clears the screen
- 15+  6048              clear_screen:
- 16+  6048 AF               xor a
- 17+  6049 01 00 18         ld bc,SCREEN_SIZE
- 18+  604C 21 00 40         ld hl,SCREEN
- 19+  604F CD 10 60         call fill_memory
- 20+  6052 C9               ret
- 21+  6053
- 22+  6053
- 23+  6053              ; Clears the background
- 24+  6053              clear_backg:
- 25+  6053 AF               xor a
- 26+  6054 CD 58 60         call fill_backg
- 27+  6057 C9               ret
- 28+  6058
- 29+  6058
- 30+  6058              ; Fills the background with fore and background color.
- 31+  6058              ; a contains the fill color.
- 32+  6058              fill_backg:
- 33+  6058 01 00 03         ld bc,COLOR_SCREEN_SIZE
- 34+  605B 21 00 58         ld hl,COLOR_SCREEN
- 35+  605E CD 10 60         call fill_memory
- 36+  6061 C9               ret
- 37+  6062
- 38+  6062
- 39+  6062
- 40+  6062
+  1+  605E              ;===========================================================================
+  2+  605E              ; clearscreen.asm
+  3+  605E              ; Submodule to clear the entire screen.
+  4+  605E              ;===========================================================================
+  5+  605E
+  6+  605E              ; Some constants
+  7+  605E              SCREEN:         equ 0x4000
+  8+  605E              SCREEN_SIZE:    equ 0x1800
+  9+  605E
+ 10+  605E              COLOR_SCREEN:       equ 0x5800
+ 11+  605E              COLOR_SCREEN_SIZE:  equ 0x0300
+ 12+  605E
+ 13+  605E
+ 14+  605E              ; Clears the screen
+ 15+  605E              clear_screen:
+ 16+  605E AF               xor a
+ 17+  605F 01 00 18         ld bc,SCREEN_SIZE
+ 18+  6062 21 00 40         ld hl,SCREEN
+ 19+  6065 CD 26 60         call fill_memory
+ 20+  6068 C9               ret
+ 21+  6069
+ 22+  6069
+ 23+  6069              ; Clears the background
+ 24+  6069              clear_backg:
+ 25+  6069 AF               xor a
+ 26+  606A CD 6E 60         call fill_backg
+ 27+  606D C9               ret
+ 28+  606E
+ 29+  606E
+ 30+  606E              ; Fills the background with fore and background color.
+ 31+  606E              ; a contains the fill color.
+ 32+  606E              fill_backg:
+ 33+  606E 01 00 03         ld bc,COLOR_SCREEN_SIZE
+ 34+  6071 21 00 58         ld hl,COLOR_SCREEN
+ 35+  6074 CD 26 60         call fill_memory
+ 36+  6077 C9               ret
+ 37+  6078
+ 38+  6078
+ 39+  6078
+ 40+  6078
 # file closed: clearscreen.asm
- 36   6062
- 37   6062                  include "dezog.asm"
+ 36   6078
+ 37   6078                  include "dezog.asm"
 # file opened: dezog.asm
-  1+  6062              ;===========================================================================
-  2+  6062              ; coop.asm
-  3+  6062              ;
-  4+  6062              ; Subroutines to cooperate with the debugged program.
-  5+  6062              ;===========================================================================
-  6+  6062
-  7+  6062
-  8+  6062              ;===========================================================================
-  9+  6062              ; Constants
- 10+  6062              ;===========================================================================
- 11+  6062
- 12+  6062              ; UART TX. Write=transmit data, Read=status
- 13+  6062              PORT_UART_TX:   equ 0x133b
- 14+  6062
- 15+  6062              ; UART Status Bits:
- 16+  6062              UART_RX_FIFO_EMPTY: equ 0   ; 0=empty, 1=not empty
- 17+  6062
- 18+  6062
- 19+  6062              ;===========================================================================
- 20+  6062              ; Checks if a new message has arrived.
- 21+  6062              ; If not then it returns without changing any register or flag.
- 22+  6062              ; If yes the message is received and interpreted.
- 23+  6062              ; Uses 2 words on the stack, one for calling the subroutine and one
- 24+  6062              ; additional for pushing AF.
- 25+  6062              ; To avoid switching banks, this is code that should be compiled together
- 26+  6062              ; with the debugged program.
- 27+  6062              ; Changes:
- 28+  6062              ;  No register. 8 bytes on the stack are used including the call to this
- 29+  6062              ;  function.
- 30+  6062              ; Duration:
- 31+  6062              ;  T-States=81 (with CALL), 2.32us@3.5MHz
- 32+  6062              ;===========================================================================
- 33+  6062              dezog_check_for_message:			; T=17 for calling
- 34+  6062              	; Save AF
- 35+  6062 F5               push af						; T=11
- 36+  6063 3E 13        	ld a,PORT_UART_TX>>8		; T= 7
- 37+  6065 DB 3B        	in a,(PORT_UART_TX&0xFF)	; T=11, Read status bits
- 38+  6067 CB 47            bit UART_RX_FIFO_EMPTY,a	; T= 8
- 39+  6069 20 02            jr nz,_dezog_start_cmd_loop	; T= 7
- 40+  606B              	; Restore AF
- 41+  606B F1               pop af						; T=10
- 42+  606C C9           	ret			 				; T=10
- 43+  606D
- 44+  606D              _dezog_start_cmd_loop:
- 45+  606D              	; Restore AF
- 46+  606D F1           	pop af
- 47+  606E
- 48+  606E              	; Jump to DivMMC code. The code is automatically paged in by branching
- 49+  606E              	; to address 0x0000.
- 50+  606E              	; Push a 0x0000 on the stack. With this the call is distinguished from
- 51+  606E              	; a SW breakpoint.
- 52+  606E              	; (Above is already the return address.)
- 53+  606E ED 8A 00 00  	push 0x0000
- 54+  6072 C3 00 00     	jp 0x0000
- 55+  6075
+  1+  6078              ;===========================================================================
+  2+  6078              ; dezog.asm
+  3+  6078              ;
+  4+  6078              ; Subroutines to cooperate with the debugged program.
+  5+  6078              ;===========================================================================
+  6+  6078
+  7+  6078
+  8+  6078              ;===========================================================================
+  9+  6078              ; Magic number addresses to recognize the debugger
+ 10+  6078              ;===========================================================================
+ 11+  6078              dezog_magic_number_a:     equ 0x0000     ; Address 0x0000 (0xE000)
+ 12+  6078              dezog_magic_number_b:     equ 0x0001
+ 13+  6078              dezog_magic_number_c:     equ 0x0066      ; Address 0x0066 (0xE066)
+ 14+  6078              dezog_magic_number_d:     equ 0x0067
+ 15+  6078
+ 16+  6078              ; The corresponding values
+ 17+  6078              DEZOG_MAGIC_NUMBER_VALUE_A:	equ 0x18
+ 18+  6078              DEZOG_MAGIC_NUMBER_VALUE_B:	equ 0x64
+ 19+  6078              DEZOG_MAGIC_NUMBER_VALUE_C:	equ 0xF5
+ 20+  6078              DEZOG_MAGIC_NUMBER_VALUE_D:	equ 0xED
+ 21+  6078
+ 22+  6078
+ 23+  6078
+ 24+  6078              ;===========================================================================
+ 25+  6078              ; Initializes the given bank with debugger code.
+ 26+  6078              ; 8 bytes at address 0 and 14 bytes at address 66h.
+ 27+  6078              ; If slot 0 does not contain the bank for DeZog or a
+ 28+  6078              ; already modified bank the function does nothing.
+ 29+  6078              ; Parameters:
+ 30+  6078              ;   A = bank to initialize.
+ 31+  6078              ; Changes:
+ 32+  6078              ;   AF
+ 33+  6078              ; ===========================================================================
+ 34+  6078              dezog_init_slot0_bank:
+ 35+  6078              	; Put the bank as parameter on the stack
+ 36+  6078 32 95 60     	ld (.push+2),a
+ 37+  607B
+ 38+  607B              	; First check if slot0 already contains a bank with modifications for DeZog.
+ 39+  607B 3A 00 00     	ld a,(dezog_magic_number_a)	; ok (suppress warning)
+ 40+  607E FE 18        	cp DEZOG_MAGIC_NUMBER_VALUE_A
+ 41+  6080 C0           	ret nz
+ 42+  6081 3A 01 00     	ld a,(dezog_magic_number_b)	; ok (suppress warning)
+ 43+  6084 FE 64        	cp DEZOG_MAGIC_NUMBER_VALUE_B
+ 44+  6086 C0           	ret nz
+ 45+  6087 3A 66 00     	ld a,(dezog_magic_number_c)	; ok (suppress warning)
+ 46+  608A FE F5        	cp DEZOG_MAGIC_NUMBER_VALUE_C
+ 47+  608C C0           	ret nz
+ 48+  608D 3A 67 00     	ld a,(dezog_magic_number_d)	; ok (suppress warning)
+ 49+  6090 FE ED        	cp DEZOG_MAGIC_NUMBER_VALUE_D
+ 50+  6092 C0           	ret nz
+ 51+  6093
+ 52+  6093              	; Push a 2=Execute "Function: init_slot0_bank"
+ 53+  6093              .push:
+ 54+  6093 ED 8A 00 02  	defb 0xED, 0x8A, 0, 2	; 0x0002
+ 55+  6097              	; Push a 0x0000 on the stack. With this the call is distinguished from
+ 56+  6097              	; a SW breakpoint.
+ 57+  6097 ED 8A 00 00  	defb 0xED, 0x8A, 0, 0	; push 0x0000
+ 58+  609B C3 00 00     	jp 0x0000
+ 59+  609E
 # file closed: dezog.asm
- 38   6075
- 39   6075                  ; Normally you would assemble the unit tests in a separate target
- 40   6075                  ; in the makefile.
- 41   6075                  ; As this is a very short program and for simplicity the
- 42   6075                  ; unit tests and the main program are assembled in the same binary.
- 43   6075                  include "unit_tests.asm"
+ 38   609E
+ 39   609E                  ; Normally you would assemble the unit tests in a separate target
+ 40   609E                  ; in the makefile.
+ 41   609E                  ; As this is a very short program and for simplicity the
+ 42   609E                  ; unit tests and the main program are assembled in the same binary.
+ 43   609E                  include "unit_tests.asm"
 # file opened: unit_tests.asm
-  1+  6075              ;========================================================
-  2+  6075              ; unit_tests.asm
-  3+  6075              ;
-  4+  6075              ; Collects and executes all unit tests.
-  5+  6075              ;========================================================
-  6+  6075
-  7+  6075                  include "unit_tests.inc"
+  1+  609E              ;========================================================
+  2+  609E              ; unit_tests.asm
+  3+  609E              ;
+  4+  609E              ; Collects and executes all unit tests.
+  5+  609E              ;========================================================
+  6+  609E
+  7+  609E                  include "unit_tests.inc"
 # file opened: unit_tests.inc
-  1++ 6075              ;--------------------------------------------------------
-  2++ 6075              ; unit_tests.inc
-  3++ 6075              ;
-  4++ 6075              ; Contains all macros used for unit testing.
-  5++ 6075              ;--------------------------------------------------------
-  6++ 6075
-  7++ 6075                IFDEF _SJASMPLUS
-  8++ 6075                  ; -----------------------------------------------------------
-  9++ 6075                  ; Code for sjasmplus
- 10++ 6075
- 11++ 6075                  MACRO UNITTEST_INITIALIZE
- 12++ 6075 ~
- 13++ 6075 ~                ; Called to call each unit test.
- 14++ 6075 ~            @UNITTEST_TEST_WRAPPER:
- 15++ 6075 ~                    di
- 16++ 6075 ~                    ld sp,UNITTEST_STACK
- 17++ 6075 ~            @UNITTEST_CALL_ADDR:
- 18++ 6075 ~                    call 0x0000 ; Will be changed by the z80 unit tests.
- 19++ 6075 ~                    nop
- 20++ 6075 ~
- 21++ 6075 ~            @UNITTEST_TEST_READY_RETURN_FAILURE:
- 22++ 6075 ~                    jr UNITTEST_TEST_READY_RETURN_FAILURE	; A breakpoint will be set here. The unit test will normally not return here but at UNITTEST_TEST_READY_SUCCESS
- 23++ 6075 ~
- 24++ 6075 ~            @UNITTEST_TEST_READY_FAILURE:
- 25++ 6075 ~                    nop
- 26++ 6075 ~            @UNITTEST_TEST_READY_FAILURE_BREAKPOINT:
- 27++ 6075 ~                    ret 	; A breakpoint will be set here. The next step will return to the failed test case
- 28++ 6075 ~
- 29++ 6075 ~            @UNITTEST_TEST_READY_SUCCESS:
- 30++ 6075 ~                    jr UNITTEST_TEST_READY_SUCCESS	; A breakpoint will be set here.
- 31++ 6075 ~
- 32++ 6075 ~            @UNITTEST_MIN_STACK_GUARD:
- 33++ 6075 ~                    defw 0	; A write watchpoint will be set here to guard the stack
- 34++ 6075 ~                    defs 2*50	; Stack depth of 50 should be enough
- 35++ 6075 ~            @UNITTEST_STACK:
- 36++ 6075 ~
- 37++ 6075 ~            @UNITTEST_MAX_STACK_GUARD:
- 38++ 6075 ~                    defw 0	; A write watchpoint will be set here to guard the stack
- 39++ 6075 ~
- 40++ 6075 ~            @UNITTEST_SAVE_REG:
- 41++ 6075 ~                    defw 0  ; Used to save register values.
- 42++ 6075 ~
- 43++ 6075 ~
- 44++ 6075 ~                ; The unit test initialization. Provided by the user.
- 45++ 6075 ~            @UNITTEST_START:
- 46++ 6075 ~                    ; Disable interrupts
- 47++ 6075 ~                    di
- 48++ 6075 ~                    ; Flow through.
- 49++ 6075 ~                    ; Directly after the UNITTEST_INITIALIZE macro the user
- 50++ 6075 ~                    ; should put his test initialization code.
- 51++ 6075 ~                    ; Note: the stack pointer does not need to be set up.
- 52++ 6075 ~
- 53++ 6075                  ENDM
- 54++ 6075
- 55++ 6075
- 56++ 6075                  ; Macro that must be used at the end of the test case (instead of a ret).
- 57++ 6075                  MACRO TC_END
- 58++ 6075 ~                    jp UNITTEST_TEST_READY_SUCCESS
- 59++ 6075                  ENDM
- 60++ 6075
- 61++ 6075
- 62++ 6075                  ; Tests a memory address for a specific byte value.
- 63++ 6075                  MACRO TEST_MEMORY_BYTE addr?, value?
- 64++ 6075 ~                    ld (UNITTEST_SAVE_REG),a
- 65++ 6075 ~                    ld a,(addr?)
- 66++ 6075 ~                    cp value?
- 67++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
- 68++ 6075 ~                    ld a,(UNITTEST_SAVE_REG)
- 69++ 6075                  ENDM
- 70++ 6075
- 71++ 6075                  ; Tests a memory address for a specific word value.
- 72++ 6075                  ; If the test fails the '(addr)' can be found in DE.
- 73++ 6075                  MACRO TEST_MEMORY_WORD addr?, value?
- 74++ 6075 ~                    push de
- 75++ 6075 ~                    push hl
- 76++ 6075 ~                    ld hl,value?
- 77++ 6075 ~                    ld de,(addr?)
- 78++ 6075 ~                    or a
- 79++ 6075 ~                    sbc hl,de
- 80++ 6075 ~                    pop hl
- 81++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
- 82++ 6075 ~                    pop de
- 83++ 6075                  ENDM
- 84++ 6075
- 85++ 6075                  ; Creates a failure when reached.
- 86++ 6075                  MACRO TEST_FAIL
- 87++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
- 88++ 6075                  ENDM
- 89++ 6075
- 90++ 6075                  ; Tests A for a specific value.
- 91++ 6075                  MACRO TEST_A value?
- 92++ 6075 ~                    cp value?
- 93++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
- 94++ 6075 ~                    nop
- 95++ 6075                  ENDM
- 96++ 6075
- 97++ 6075                  ; Tests that A is not equal to a specific value.
- 98++ 6075                  MACRO TEST_A_UNEQUAL value?
- 99++ 6075 ~                    cp value?
-100++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-101++ 6075 ~                    nop
-102++ 6075                  ENDM
-103++ 6075
-104++ 6075                  ; Tests a single register for a specific value.
-105++ 6075                  ; E.g. TEST_REG b, 6 ; Tests if register b == 6
-106++ 6075                  MACRO TEST_REG reg?, value?
-107++ 6075 ~                    ld (UNITTEST_SAVE_REG),a
-108++ 6075 ~                    ld a,reg?
-109++ 6075 ~                    cp value?
-110++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-111++ 6075 ~                    ld a,(UNITTEST_SAVE_REG)
-112++ 6075                  ENDM
-113++ 6075
-114++ 6075                  ; Tests that a single register is not a specific value.
-115++ 6075                  ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
-116++ 6075                  MACRO TEST_REG_UNEQUAL reg?, value?
-117++ 6075 ~                    ld (UNITTEST_SAVE_REG),a
-118++ 6075 ~                    ld a,reg?
-119++ 6075 ~                    cp value?
-120++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-121++ 6075 ~                    ld a,(UNITTEST_SAVE_REG)
-122++ 6075                  ENDM
-123++ 6075
-124++ 6075                  ; Tests a double register for a specific value.
-125++ 6075                  ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
-126++ 6075                  MACRO TEST_DREG dreg?, value?
-127++ 6075 ~                    push de
-128++ 6075 ~                    push hl
-129++ 6075 ~                    push dreg?
-130++ 6075 ~                    pop hl
-131++ 6075 ~                    ld de,value?
-132++ 6075 ~                    or a
-133++ 6075 ~                    sbc hl,de
-134++ 6075 ~                    pop hl
-135++ 6075 ~                    pop de
-136++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-137++ 6075 ~                    nop
-138++ 6075                  ENDM
-139++ 6075
-140++ 6075
-141++ 6075                   ; Tests a double register for a specific value.
-142++ 6075                  ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
-143++ 6075                  MACRO TEST_DREG_UNEQUAL dreg?, value?
-144++ 6075 ~                    push de
-145++ 6075 ~                    push hl
-146++ 6075 ~                    push dreg?
-147++ 6075 ~                    pop hl
-148++ 6075 ~                    ld de,value?
-149++ 6075 ~                    or a
-150++ 6075 ~                    sbc hl,de
-151++ 6075 ~                    pop hl
-152++ 6075 ~                    pop de
-153++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-154++ 6075 ~                    nop
-155++ 6075                  ENDM
-156++ 6075
-157++ 6075
-158++ 6075                  ; Test two registers for equality.
-159++ 6075                  ; Testcase fails if registers are not equal.
-160++ 6075                  MACRO TEST_DREGS dreg1?, dreg2?
-161++ 6075 ~                    push de
-162++ 6075 ~                    push hl
-163++ 6075 ~                    push dreg1?
-164++ 6075 ~                    push dreg2?
-165++ 6075 ~                    pop de
-166++ 6075 ~                    pop hl
-167++ 6075 ~                    or a
-168++ 6075 ~                    sbc hl,de
-169++ 6075 ~                    pop hl
-170++ 6075 ~                    pop de
-171++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-172++ 6075 ~                    nop
-173++ 6075                  ENDM
-174++ 6075
-175++ 6075
-176++ 6075                  ; Test two registers for unequality.
-177++ 6075                  ; Testcase fails if registers are equal.
-178++ 6075                  MACRO TEST_DREGS_UNEQUAL dreg1?, dreg2?
-179++ 6075 ~                    push de
-180++ 6075 ~                    push hl
-181++ 6075 ~                    push dreg1?
-182++ 6075 ~                    push dreg2?
-183++ 6075 ~                    pop de
-184++ 6075 ~                    pop hl
-185++ 6075 ~                    or a
-186++ 6075 ~                    sbc hl,de
-187++ 6075 ~                    pop hl
-188++ 6075 ~                    pop de
-189++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-190++ 6075 ~                    nop
-191++ 6075                  ENDM
-192++ 6075
-193++ 6075
-194++ 6075                  ; Compares 2 memory areas containing null terminated strings.
-195++ 6075                  ; addr1 = the first string
-196++ 6075                  ; addr2 = the second string
-197++ 6075                  MACRO TEST_STRING_PTR addr1?, addr2?
-198++ 6075 ~                    push af
-199++ 6075 ~                    push hl
-200++ 6075 ~                    push de
-201++ 6075 ~                    ld de,addr2?
-202++ 6075 ~                    ld hl,addr1?
-203++ 6075 ~            .loop:
-204++ 6075 ~                    ld a,(de)
-205++ 6075 ~                    ; Check for null termination
-206++ 6075 ~                    cp (hl)
-207++ 6075 ~                    jr nz,.not_equal
-208++ 6075 ~                    or a
-209++ 6075 ~                    jr z,.null_found
-210++ 6075 ~                    inc de
-211++ 6075 ~                    inc hl
-212++ 6075 ~                    jr .loop
-213++ 6075 ~
-214++ 6075 ~            .not_equal:
-215++ 6075 ~                    ; Strings are not equal
-216++ 6075 ~                    pop de
-217++ 6075 ~                    pop hl
-218++ 6075 ~                    pop af
-219++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-220++ 6075 ~                    jr .end
-221++ 6075 ~
-222++ 6075 ~            .null_found:
-223++ 6075 ~                    pop de
-224++ 6075 ~                    pop hl
-225++ 6075 ~                    pop af
-226++ 6075 ~            .end:
-227++ 6075                  ENDM
-228++ 6075
-229++ 6075
-230++ 6075                  ; Tests a memory address for a specific string.
-231++ 6075                  ; addr = the tested string
-232++ 6075                  ; string = the compared string, e.g. "STRING"
-233++ 6075                  ; term0 = If 0 it is also tested that the string (addr) is null terminated
-234++ 6075                  MACRO TEST_STRING addr?, string?, term0?
-235++ 6075 ~                    push af
-236++ 6075 ~                    push hl
-237++ 6075 ~                    push de
-238++ 6075 ~                    ld de,.comp_string
-239++ 6075 ~                    ld hl,addr?
-240++ 6075 ~            .loop:
-241++ 6075 ~                    ld a,(de)
-242++ 6075 ~                    ; Check for null termination
-243++ 6075 ~                    or a
-244++ 6075 ~                    jr z,.null_found
-245++ 6075 ~                    cp (hl)
-246++ 6075 ~                    inc de
-247++ 6075 ~                    inc hl
-248++ 6075 ~                    jr z,.loop
-249++ 6075 ~
-250++ 6075 ~            .not_equal:
-251++ 6075 ~                    ; Strings are not equal
-252++ 6075 ~                    pop de
-253++ 6075 ~                    pop hl
-254++ 6075 ~                    pop af
-255++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-256++ 6075 ~                    jr .end
-257++ 6075 ~
-258++ 6075 ~            .comp_string:
-259++ 6075 ~                    defb string?, 0
-260++ 6075 ~
-261++ 6075 ~            .null_found:
-262++ 6075 ~                    ; We are at the end of the compare string.
-263++ 6075 ~                    ; Check if null termination should be compared with the tested string.
-264++ 6075 ~                  IF term0? == 0
-265++ 6075 ~                    cp (hl)
-266++ 6075 ~                    jr nz,.not_equal
-267++ 6075 ~                  ENDIF
-268++ 6075 ~
-269++ 6075 ~                    pop de
-270++ 6075 ~                    pop hl
-271++ 6075 ~                    pop af
-272++ 6075 ~            .end:
-273++ 6075                  ENDM
-274++ 6075
-275++ 6075
-276++ 6075                  ; Tests a memory address for a specific string.
-277++ 6075                  ; addr1 = the tested memory area
-278++ 6075                  ; addr2 = the memory area to compare to
-279++ 6075                  ; count = the number of elements to compare
-280++ 6075                  MACRO TEST_MEM_CMP addr1?, addr2?, count?
-281++ 6075 ~                    push af
-282++ 6075 ~                    push hl
-283++ 6075 ~                    push de
-284++ 6075 ~                    push bc
-285++ 6075 ~                    ld de,addr2?
-286++ 6075 ~                    ld hl,addr1?
-287++ 6075 ~                    ld bc,count?
-288++ 6075 ~            .loop:
-289++ 6075 ~                    ld a,(de)
-290++ 6075 ~                    ; Compare
-291++ 6075 ~                    cpi      ; cp (hl++); dec bc
-292++ 6075 ~                    jr nz,.not_equal
-293++ 6075 ~                    inc de
-294++ 6075 ~                    jp pe,.loop
-295++ 6075 ~
-296++ 6075 ~                    ; Memory is equal
-297++ 6075 ~                    pop bc
-298++ 6075 ~                    pop de
-299++ 6075 ~                    pop hl
-300++ 6075 ~                    pop af
-301++ 6075 ~                    jr .end
-302++ 6075 ~
-303++ 6075 ~            .not_equal:
-304++ 6075 ~                    ; Memory areas are not equal
-305++ 6075 ~                    pop bc
-306++ 6075 ~                    pop de
-307++ 6075 ~                    pop hl
-308++ 6075 ~                    pop af
-309++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-310++ 6075 ~                    jr .end
-311++ 6075 ~            .end:
-312++ 6075                  ENDM
-313++ 6075
-314++ 6075
-315++ 6075                  ; Initializes the registers with default values.
-316++ 6075                  ; Use before the tested function is called.
-317++ 6075                  ; After the call the TEST_UNCHANGED_XX tests can be used
-318++ 6075                  ; to check if the register was changed.
-319++ 6075                  MACRO DEFAULT_REGS
-320++ 6075 ~                    ld a,0xAA
-321++ 6075 ~                    ld bc,0xBBCC
-322++ 6075 ~                    ld de,0xDDEE
-323++ 6075 ~                    ld hl,0x8899
-324++ 6075                  ENDM
-325++ 6075
-326++ 6075                  MACRO TEST_UNCHANGED_BC
-327++ 6075 ~                    push hl
-328++ 6075 ~                    ld hl,0xBBCC
-329++ 6075 ~                    or a
-330++ 6075 ~                    sbc hl,bc
-331++ 6075 ~                    pop hl
-332++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-333++ 6075 ~                    nop
-334++ 6075                  ENDM
-335++ 6075
-336++ 6075                  MACRO TEST_UNCHANGED_DE
-337++ 6075 ~                    push hl
-338++ 6075 ~                    ld hl,0xDDEE
-339++ 6075 ~                    or a
-340++ 6075 ~                    sbc hl,de
-341++ 6075 ~                    pop hl
-342++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-343++ 6075 ~                    nop
-344++ 6075                  ENDM
-345++ 6075
-346++ 6075                  MACRO TEST_UNCHANGED_HL
-347++ 6075 ~                    push de
-348++ 6075 ~                    ld de,0x8899
-349++ 6075 ~                    or a
-350++ 6075 ~                    sbc hl,de
-351++ 6075 ~                    add hl,de   ; restore hl without affecting the flags
-352++ 6075 ~                    pop de
-353++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-354++ 6075 ~                    nop
-355++ 6075                  ENDM
-356++ 6075
-357++ 6075                  MACRO TEST_UNCHANGED_BC_DE
-358++ 6075 ~                    TEST_UNCHANGED_BC
-359++ 6075 ~                    TEST_UNCHANGED_DE
-360++ 6075                  ENDM
-361++ 6075
-362++ 6075                  MACRO TEST_UNCHANGED_BC_DE_HL
-363++ 6075 ~                    TEST_UNCHANGED_BC_DE
-364++ 6075 ~                    TEST_UNCHANGED_HL
-365++ 6075                  ENDM
-366++ 6075
-367++ 6075                  MACRO TEST_UNCHANGED_A
-368++ 6075 ~                    TEST_A 0xAA
-369++ 6075                  ENDM
-370++ 6075
-371++ 6075                  MACRO TEST_UNCHANGED_B
-372++ 6075 ~                    TEST_REG b, 0xBB
-373++ 6075                  ENDM
-374++ 6075
-375++ 6075                  MACRO TEST_UNCHANGED_C
-376++ 6075 ~                    TEST_REG c, 0xCC
-377++ 6075                  ENDM
-378++ 6075
-379++ 6075                  MACRO TEST_UNCHANGED_D
-380++ 6075 ~                    TEST_REG d, 0xDD
-381++ 6075                  ENDM
-382++ 6075
-383++ 6075                  MACRO TEST_UNCHANGED_E
-384++ 6075 ~                    TEST_REG e, 0xEE
-385++ 6075                  ENDM
-386++ 6075
-387++ 6075                  MACRO TEST_UNCHANGED_H
-388++ 6075 ~                    TEST_REG h, 0x88
-389++ 6075                  ENDM
-390++ 6075
-391++ 6075                  MACRO TEST_UNCHANGED_L
-392++ 6075 ~                    TEST_REG l, 0x99
-393++ 6075                  ENDM
-394++ 6075
-395++ 6075
-396++ 6075                  ; Macro to test flags for Z.
-397++ 6075                  ; Testcase fails for NZ.
-398++ 6075                  MACRO TEST_FLAG_Z
-399++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-400++ 6075 ~                    nop
-401++ 6075                  ENDM
-402++ 6075
-403++ 6075
-404++ 6075                  ; Macro to test flags for NZ.
-405++ 6075                  ; Testcase fails for Z.
-406++ 6075                  MACRO TEST_FLAG_NZ
-407++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-408++ 6075 ~                    nop
-409++ 6075                  ENDM
-410++ 6075
-411++ 6075
-412++ 6075                  ; This macro uses all registers, also the shadow registers.
-413++ 6075                  MACRO USE_ALL_REGS
-414++ 6075 ~                    ld a,0xCD
-415++ 6075 ~                    ld bc,0xBBCC
-416++ 6075 ~                    ld de,0xDDEE
-417++ 6075 ~                    ld hl,0xFF11
-418++ 6075 ~                    ld ix,0x7788
-419++ 6075 ~                    ld iy,0x99AA
-420++ 6075 ~                    exx
-421++ 6075 ~                    ld a,0xDC
-422++ 6075 ~                    ld bc,0x1122
-423++ 6075 ~                    ld de,0x3344
-424++ 6075 ~                    ld hl,0x5566
-425++ 6075 ~                    exx
-426++ 6075                  ENDM
-427++ 6075
-428++ 6075                  ; sjasmplus end
-429++ 6075                  ; -----------------------------------------------------------
-430++ 6075
-431++ 6075
-432++ 6075                ELSE
-433++ 6075 ~                ; -----------------------------------------------------------
-434++ 6075 ~
-435++ 6075 ~                ; -------------------------------------------------------
-436++ 6075 ~                ; Code for e.g. Savannah's z80asm, maybe others.
-437++ 6075 ~
-438++ 6075 ~            UNITTEST_INITIALIZE:    MACRO
-439++ 6075 ~
-440++ 6075 ~                ; Called to call each unit test.
-441++ 6075 ~            UNITTEST_TEST_WRAPPER:  di
-442++ 6075 ~                    ld sp,UNITTEST_STACK
-443++ 6075 ~            UNITTEST_CALL_ADDR: call 0x0000 ; Will be changed by the z80 unit tests.
-444++ 6075 ~                    nop
-445++ 6075 ~
-446++ 6075 ~            UNITTEST_TEST_READY_RETURN_FAILURE: jr UNITTEST_TEST_READY_RETURN_FAILURE	; A breakpoint will be set here. The unit test will normally not return here but at UNITTEST_TEST_READY_SUCCESS
-447++ 6075 ~
-448++ 6075 ~            UNITTEST_TEST_READY_FAILURE:    nop
-449++ 6075 ~            UNITTEST_TEST_READY_FAILURE_BREAKPOINT: ret 	; A breakpoint will be set here. The next step will return to the failed test case
-450++ 6075 ~
-451++ 6075 ~            UNITTEST_TEST_READY_SUCCESS:    jr UNITTEST_TEST_READY_SUCCESS	; A breakpoint will be set here.
-452++ 6075 ~
-453++ 6075 ~
-454++ 6075 ~            UNITTEST_MIN_STACK_GUARD:   defw 0	; A write watchpoint will be set here to guard the stack
-455++ 6075 ~                    defs 2*50	; Stack depth of 50 should be enough
-456++ 6075 ~            UNITTEST_STACK: defw 0
-457++ 6075 ~            UNITTEST_MAX_STACK_GUARD:   defw 0	; A write watchpoint will be set here to guard the stack
-458++ 6075 ~
-459++ 6075 ~            UNITTEST_SAVE_REG:  defw 0  ; Used to save register values.
-460++ 6075 ~
-461++ 6075 ~
-462++ 6075 ~                ; The unit test initialization. Provided by the user.
-463++ 6075 ~            UNITTEST_START: di       ; Disable interrupts
-464++ 6075 ~                    ; Flow through.
-465++ 6075 ~                    ; Directly after the UNITTEST_INITIALIZE macro the user
-466++ 6075 ~                    ; should put his test initialization code.
-467++ 6075 ~                    ; Note: the stack pointer does not need to be set up.
-468++ 6075 ~
-469++ 6075 ~                ENDM
-470++ 6075 ~
-471++ 6075 ~
-472++ 6075 ~                ; Macro that must be used at the end of the test case (instead of a ret).
-473++ 6075 ~            TC_END:    MACRO
-474++ 6075 ~                    jp UNITTEST_TEST_READY_SUCCESS
-475++ 6075 ~                ENDM
-476++ 6075 ~
-477++ 6075 ~
-478++ 6075 ~
-479++ 6075 ~                ; Tests a memory address for a specific byte value.
-480++ 6075 ~            TEST_MEMORY_BYTE:    MACRO addr value
-481++ 6075 ~                    ld (UNITTEST_SAVE_REG),a
-482++ 6075 ~                    ld a,(addr)
-483++ 6075 ~                    cp value
-484++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-485++ 6075 ~                    ld a,(UNITTEST_SAVE_REG)
-486++ 6075 ~                ENDM
-487++ 6075 ~
-488++ 6075 ~                ; Tests a memory address for a specific word value.
-489++ 6075 ~                ; If the test fails the '(addr)' can be found in DE.
-490++ 6075 ~            TEST_MEMORY_WORD:    MACRO addr value
-491++ 6075 ~                    push de
-492++ 6075 ~                    push hl
-493++ 6075 ~                    ld hl,value
-494++ 6075 ~                    ld de,(addr)
-495++ 6075 ~                    or a
-496++ 6075 ~                    sbc hl,de
-497++ 6075 ~                    pop hl
-498++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-499++ 6075 ~                    pop de
-500++ 6075 ~                ENDM
-501++ 6075 ~
-502++ 6075 ~               ; Creates a failure when reached.
-503++ 6075 ~            TEST_FAIL:  MACRO
-504++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-505++ 6075 ~                ENDM
-506++ 6075 ~
-507++ 6075 ~                ; Tests A for a specific value.
-508++ 6075 ~            TEST_A:    MACRO value
-509++ 6075 ~                    cp value
-510++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-511++ 6075 ~                    nop
-512++ 6075 ~                ENDM
-513++ 6075 ~
-514++ 6075 ~                ; Tests that A is not equal to a specific value.
-515++ 6075 ~            TEST_A_UNEQUAL:    MACRO value
-516++ 6075 ~                    cp value
-517++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-518++ 6075 ~                    nop
-519++ 6075 ~                ENDM
-520++ 6075 ~
-521++ 6075 ~                ; Tests a single register for a specific value.
-522++ 6075 ~                ; E.g. TEST_REG b, 6 ; Tests if register b == 6
-523++ 6075 ~            TEST_REG:    MACRO reg value
-524++ 6075 ~                    ld (UNITTEST_SAVE_REG),a
-525++ 6075 ~                    ld a,reg
-526++ 6075 ~                    cp value
-527++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-528++ 6075 ~                    ld a,(UNITTEST_SAVE_REG)
-529++ 6075 ~                ENDM
-530++ 6075 ~
-531++ 6075 ~                ; Tests that a single register is not a specific value.
-532++ 6075 ~                ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
-533++ 6075 ~            TEST_REG_UNEQUAL:    MACRO reg value
-534++ 6075 ~                    ld (UNITTEST_SAVE_REG),a
-535++ 6075 ~                    ld a,reg
-536++ 6075 ~                    cp value
-537++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-538++ 6075 ~                    ld a,(UNITTEST_SAVE_REG)
-539++ 6075 ~                ENDM
-540++ 6075 ~
-541++ 6075 ~                ; Tests a double register for a specific value.
-542++ 6075 ~                ; E.g. TEST_DREG hl, label1 ; Tests if register hl == label1
-543++ 6075 ~            TEST_DREG:    MACRO dreg value
-544++ 6075 ~                    push de
-545++ 6075 ~                    push hl
-546++ 6075 ~                    push dreg
-547++ 6075 ~                    pop hl
-548++ 6075 ~                    ld de,value
-549++ 6075 ~                    or a
-550++ 6075 ~                    sbc hl,de
-551++ 6075 ~                    pop hl
-552++ 6075 ~                    pop de
-553++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-554++ 6075 ~                    nop
-555++ 6075 ~                ENDM
-556++ 6075 ~
-557++ 6075 ~                ; Tests a double register is not a specific value.
-558++ 6075 ~                ; E.g. TEST_DREG_UNEQUAL hl, label1 ; Tests if register hl != label1
-559++ 6075 ~            TEST_DREG_UNEQUAL:    MACRO dreg value
-560++ 6075 ~                    push de
-561++ 6075 ~                    push hl
-562++ 6075 ~                    push dreg
-563++ 6075 ~                    pop hl
-564++ 6075 ~                    ld de,value
-565++ 6075 ~                    or a
-566++ 6075 ~                    sbc hl,de
-567++ 6075 ~                    pop hl
-568++ 6075 ~                    pop de
-569++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-570++ 6075 ~                    nop
-571++ 6075 ~                ENDM
-572++ 6075 ~
-573++ 6075 ~
-574++ 6075 ~                ; Test two registers for equality.
-575++ 6075 ~                ; Testcase fails if registers are not equal.
-576++ 6075 ~            TEST_DREGS:    MACRO dreg1 dreg2
-577++ 6075 ~                    push de
-578++ 6075 ~                    push hl
-579++ 6075 ~                    push dreg1
-580++ 6075 ~                    push dreg2
-581++ 6075 ~                    pop de
-582++ 6075 ~                    pop hl
-583++ 6075 ~                    or a
-584++ 6075 ~                    sbc hl,de
-585++ 6075 ~                    pop de
-586++ 6075 ~                    pop hl
-587++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-588++ 6075 ~                    nop
-589++ 6075 ~                ENDM
-590++ 6075 ~
-591++ 6075 ~
-592++ 6075 ~                ; Test two registers for unequality.
-593++ 6075 ~                ; Testcase fails if registers are equal.
-594++ 6075 ~            TEST_DREGS_UNEQUAL:    MACRO dreg1 dreg2
-595++ 6075 ~                    push de
-596++ 6075 ~                    push hl
-597++ 6075 ~                    push dreg1
-598++ 6075 ~                    push dreg2
-599++ 6075 ~                    pop de
-600++ 6075 ~                    pop hl
-601++ 6075 ~                    or a
-602++ 6075 ~                    sbc hl,de
-603++ 6075 ~                    pop de
-604++ 6075 ~                    pop hl
-605++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-606++ 6075 ~                    nop
-607++ 6075 ~                ENDM
-608++ 6075 ~
-609++ 6075 ~                ; Compares 2 memory areas containing null terminated strings.
-610++ 6075 ~                ; addr1 = the first string
-611++ 6075 ~                ; addr2 = the second string
-612++ 6075 ~            TEST_STRING_PTR:    MACRO addr1, addr2
-613++ 6075 ~                    push af
-614++ 6075 ~                    push hl
-615++ 6075 ~                    push de
-616++ 6075 ~                    ld de,addr2
-617++ 6075 ~                    ld hl,addr1?
-618++ 6075 ~            .loop:
-619++ 6075 ~                    ld a,(de)
-620++ 6075 ~                    ; Check for null termination
-621++ 6075 ~                    cp (hl)
-622++ 6075 ~                    jr nz,.not_equal
-623++ 6075 ~                    or a
-624++ 6075 ~                    jr z,.null_found
-625++ 6075 ~                    inc de
-626++ 6075 ~                    inc hl
-627++ 6075 ~                    jr .loop
-628++ 6075 ~
-629++ 6075 ~            .not_equal:
-630++ 6075 ~                    ; Strings are not equal
-631++ 6075 ~                    pop de
-632++ 6075 ~                    pop hl
-633++ 6075 ~                    pop af
-634++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-635++ 6075 ~                    jr .end
-636++ 6075 ~
-637++ 6075 ~            .null_found:
-638++ 6075 ~                    pop de
-639++ 6075 ~                    pop hl
-640++ 6075 ~                    pop af
-641++ 6075 ~            .end:
-642++ 6075 ~                ENDM
-643++ 6075 ~
-644++ 6075 ~
-645++ 6075 ~                ; Tests a memory address for a specific string.
-646++ 6075 ~                ; addr = the tested string
-647++ 6075 ~                ; string = the compared string
-648++ 6075 ~                ; term0 = If 0 it is also tested that the string (addr) is null terminated
-649++ 6075 ~            TEST_STRING:    MACRO addr string term0
-650++ 6075 ~                    push af
-651++ 6075 ~                    push hl
-652++ 6075 ~                    push de
-653++ 6075 ~                    ld de,.comp_string
-654++ 6075 ~                    ld hl,addr?
-655++ 6075 ~            .loop:
-656++ 6075 ~                    ld a,(de)
-657++ 6075 ~                    ; Check for null termination
-658++ 6075 ~                    or a
-659++ 6075 ~                    jr z,.null_found
-660++ 6075 ~                    cp (hl)
-661++ 6075 ~                    inc de
-662++ 6075 ~                    inc hl
-663++ 6075 ~                    jr z,.loop
-664++ 6075 ~
-665++ 6075 ~            .not_equal:
-666++ 6075 ~                    ; Strings are not equal
-667++ 6075 ~                    pop de
-668++ 6075 ~                    pop hl
-669++ 6075 ~                    pop af
-670++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-671++ 6075 ~                    jr .end
-672++ 6075 ~
-673++ 6075 ~            .comp_string:
-674++ 6075 ~                    defb string, 0
-675++ 6075 ~
-676++ 6075 ~            .null_found:
-677++ 6075 ~                    ; We are at the end of the compare string.
-678++ 6075 ~                    ; Check if null termination should be compared with the tested string.
-679++ 6075 ~                  IF term0 == 0
-680++ 6075 ~                    cp (hl)
-681++ 6075 ~                    jr nz,.not_equal
-682++ 6075 ~                  ENDIF
-683++ 6075 ~
-684++ 6075 ~                    pop de
-685++ 6075 ~                    pop hl
-686++ 6075 ~                    pop af
-687++ 6075 ~            .end:
-688++ 6075 ~                ENDM
-689++ 6075 ~
-690++ 6075 ~
-691++ 6075 ~                ; Tests a memory address for a specific string.
-692++ 6075 ~                ; addr1 = the tested memory area
-693++ 6075 ~                ; addr2 = the memory area to compare to
-694++ 6075 ~                ; count = the number of elements to compare
-695++ 6075 ~            TEST_MEM_CMP:   MACRO addr1, addr2, count
-696++ 6075 ~                    push af
-697++ 6075 ~                    push hl
-698++ 6075 ~                    push de
-699++ 6075 ~                    push bc
-700++ 6075 ~                    ld de,addr2
-701++ 6075 ~                    ld hl,addr1
-702++ 6075 ~                    ld bc,count
-703++ 6075 ~            .loop:
-704++ 6075 ~                    ld a,(de)
-705++ 6075 ~                    ; Compare
-706++ 6075 ~                    cpi      ; cp (hl++); dec bc
-707++ 6075 ~                    jr nz,.not_equal
-708++ 6075 ~                    inc de
-709++ 6075 ~                    jp pe,.loop
-710++ 6075 ~
-711++ 6075 ~                    ; Memory is equal
-712++ 6075 ~                    pop bc
-713++ 6075 ~                    pop de
-714++ 6075 ~                    pop hl
-715++ 6075 ~                    pop af
-716++ 6075 ~                    jr .end
-717++ 6075 ~
-718++ 6075 ~            .not_equal:
-719++ 6075 ~                    ; Memory areas are not equal
-720++ 6075 ~                    pop bc
-721++ 6075 ~                    pop de
-722++ 6075 ~                    pop hl
-723++ 6075 ~                    pop af
-724++ 6075 ~                    call UNITTEST_TEST_READY_FAILURE
-725++ 6075 ~                    jr .end
-726++ 6075 ~            .end:
-727++ 6075 ~                ENDM
-728++ 6075 ~
-729++ 6075 ~
-730++ 6075 ~                ; Initializes the registers with default values.
-731++ 6075 ~                ; Use before the tested function is called.
-732++ 6075 ~                ; After the call the TEST_UNCHANGED_XX tests can be used
-733++ 6075 ~                ; to check if the register was changed.
-734++ 6075 ~            DEFAULT_REGS:    MACRO
-735++ 6075 ~                    ld a,0xAA
-736++ 6075 ~                    ld bc,0xBBCC
-737++ 6075 ~                    ld de,0xDDEE
-738++ 6075 ~                    ld hl,0x8899
-739++ 6075 ~                ENDM
-740++ 6075 ~
-741++ 6075 ~            TEST_UNCHANGED_BC:    MACRO
-742++ 6075 ~                    push hl
-743++ 6075 ~                    ld hl,0xBBCC
-744++ 6075 ~                    or a
-745++ 6075 ~                    sbc hl,bc
-746++ 6075 ~                    pop hl
-747++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-748++ 6075 ~                    nop
-749++ 6075 ~                ENDM
-750++ 6075 ~
-751++ 6075 ~            TEST_UNCHANGED_DE:    MACRO
-752++ 6075 ~                    push hl
-753++ 6075 ~                    ld hl,0xDDEE
-754++ 6075 ~                    or a
-755++ 6075 ~                    sbc hl,de
-756++ 6075 ~                    pop hl
-757++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-758++ 6075 ~                    nop
-759++ 6075 ~                ENDM
-760++ 6075 ~
-761++ 6075 ~            TEST_UNCHANGED_HL:    MACRO
-762++ 6075 ~                    push de
-763++ 6075 ~                    ld de,0x8899
-764++ 6075 ~                    or a
-765++ 6075 ~                    sbc hl,de
-766++ 6075 ~                    add hl,de   ; restore hl without affecting the flags
-767++ 6075 ~                    pop de
-768++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-769++ 6075 ~                    nop
-770++ 6075 ~                ENDM
-771++ 6075 ~
-772++ 6075 ~            TEST_UNCHANGED_BC_DE:    MACRO
-773++ 6075 ~                    TEST_UNCHANGED_BC
-774++ 6075 ~                    TEST_UNCHANGED_DE
-775++ 6075 ~                ENDM
-776++ 6075 ~
-777++ 6075 ~            TEST_UNCHANGED_BC_DE_HL:    MACRO
-778++ 6075 ~                    TEST_UNCHANGED_BC_DE
-779++ 6075 ~                    TEST_UNCHANGED_HL
-780++ 6075 ~                ENDM
-781++ 6075 ~
-782++ 6075 ~            TEST_UNCHANGED_A:    MACRO
-783++ 6075 ~                    TEST_A 0xAA
-784++ 6075 ~                ENDM
-785++ 6075 ~
-786++ 6075 ~            TEST_UNCHANGED_B:    MACRO
-787++ 6075 ~                    TEST_REG b, 0xBB
-788++ 6075 ~                ENDM
-789++ 6075 ~
-790++ 6075 ~            TEST_UNCHANGED_C:    MACRO
-791++ 6075 ~                    TEST_REG c, 0xCC
-792++ 6075 ~                ENDM
-793++ 6075 ~
-794++ 6075 ~            TEST_UNCHANGED_D:    MACRO
-795++ 6075 ~                    TEST_REG d, 0xDD
-796++ 6075 ~                ENDM
-797++ 6075 ~
-798++ 6075 ~            TEST_UNCHANGED_E:    MACRO
-799++ 6075 ~                    TEST_REG e, 0xEE
-800++ 6075 ~                ENDM
-801++ 6075 ~
-802++ 6075 ~            TEST_UNCHANGED_H:    MACRO
-803++ 6075 ~                    TEST_REG h, 0x88
-804++ 6075 ~                ENDM
-805++ 6075 ~
-806++ 6075 ~            TEST_UNCHANGED_L:    MACRO
-807++ 6075 ~                    TEST_REG l, 0x99
-808++ 6075 ~                ENDM
-809++ 6075 ~
-810++ 6075 ~
-811++ 6075 ~                ; Macro to test flags for Z.
-812++ 6075 ~                ; Testcase fails for NZ.
-813++ 6075 ~            TEST_FLAG_Z:    MACRO
-814++ 6075 ~                    call nz,UNITTEST_TEST_READY_FAILURE
-815++ 6075 ~                    nop
-816++ 6075 ~                ENDM
-817++ 6075 ~
-818++ 6075 ~
-819++ 6075 ~                ; Macro to test flags for NZ.
-820++ 6075 ~                ; Testcase fails for Z.
-821++ 6075 ~            TEST_FLAG_NZ:    MACRO
-822++ 6075 ~                    call z,UNITTEST_TEST_READY_FAILURE
-823++ 6075 ~                    nop
-824++ 6075 ~                ENDM
-825++ 6075 ~
-826++ 6075 ~
-827++ 6075 ~                ; This macro uses all registers, also the shadow registers.
-828++ 6075 ~            USE_ALL_REGS:    MACRO
-829++ 6075 ~                    ld a,0xCD
-830++ 6075 ~                    ld bc,0xBBCC
-831++ 6075 ~                    ld de,0xDDEE
-832++ 6075 ~                    ld hl,0xFF11
-833++ 6075 ~                    ld ix,0x7788
-834++ 6075 ~                    ld iy,0x99AA
-835++ 6075 ~                    exx
-836++ 6075 ~                    ld a,0xDC
-837++ 6075 ~                    ld bc,0x1122
-838++ 6075 ~                    ld de,0x3344
-839++ 6075 ~                    ld hl,0x5566
-840++ 6075 ~                    exx
-841++ 6075 ~                ENDM
-842++ 6075 ~
-843++ 6075 ~
-844++ 6075 ~                ; other assemblers end
-845++ 6075 ~                ; -----------------------------------------------------------
-846++ 6075                ENDIF
-847++ 6075
+  1++ 609E              ;--------------------------------------------------------
+  2++ 609E              ; unit_tests.inc
+  3++ 609E              ;
+  4++ 609E              ; Contains all macros used for unit testing.
+  5++ 609E              ;--------------------------------------------------------
+  6++ 609E
+  7++ 609E                IFDEF _SJASMPLUS
+  8++ 609E                  ; -----------------------------------------------------------
+  9++ 609E                  ; Code for sjasmplus
+ 10++ 609E
+ 11++ 609E                  MACRO UNITTEST_INITIALIZE
+ 12++ 609E ~
+ 13++ 609E ~                ; Called to call each unit test.
+ 14++ 609E ~            @UNITTEST_TEST_WRAPPER:
+ 15++ 609E ~                    di
+ 16++ 609E ~                    ld sp,UNITTEST_STACK
+ 17++ 609E ~            @UNITTEST_CALL_ADDR:
+ 18++ 609E ~                    call 0x0000 ; Will be changed by the z80 unit tests.
+ 19++ 609E ~                    nop
+ 20++ 609E ~
+ 21++ 609E ~            @UNITTEST_TEST_READY_RETURN_FAILURE:
+ 22++ 609E ~                    jr UNITTEST_TEST_READY_RETURN_FAILURE	; A breakpoint will be set here. The unit test will normally not return here but at UNITTEST_TEST_READY_SUCCESS
+ 23++ 609E ~
+ 24++ 609E ~            @UNITTEST_TEST_READY_FAILURE:
+ 25++ 609E ~                    nop
+ 26++ 609E ~            @UNITTEST_TEST_READY_FAILURE_BREAKPOINT:
+ 27++ 609E ~                    ret 	; A breakpoint will be set here. The next step will return to the failed test case
+ 28++ 609E ~
+ 29++ 609E ~            @UNITTEST_TEST_READY_SUCCESS:
+ 30++ 609E ~                    jr UNITTEST_TEST_READY_SUCCESS	; A breakpoint will be set here.
+ 31++ 609E ~
+ 32++ 609E ~            @UNITTEST_MIN_STACK_GUARD:
+ 33++ 609E ~                    defw 0	; A write watchpoint will be set here to guard the stack
+ 34++ 609E ~                    defs 2*50	; Stack depth of 50 should be enough
+ 35++ 609E ~            @UNITTEST_STACK:
+ 36++ 609E ~
+ 37++ 609E ~            @UNITTEST_MAX_STACK_GUARD:
+ 38++ 609E ~                    defw 0	; A write watchpoint will be set here to guard the stack
+ 39++ 609E ~
+ 40++ 609E ~            @UNITTEST_SAVE_REG:
+ 41++ 609E ~                    defw 0  ; Used to save register values.
+ 42++ 609E ~
+ 43++ 609E ~
+ 44++ 609E ~                ; The unit test initialization. Provided by the user.
+ 45++ 609E ~            @UNITTEST_START:
+ 46++ 609E ~                    ; Disable interrupts
+ 47++ 609E ~                    di
+ 48++ 609E ~                    ; Flow through.
+ 49++ 609E ~                    ; Directly after the UNITTEST_INITIALIZE macro the user
+ 50++ 609E ~                    ; should put his test initialization code.
+ 51++ 609E ~                    ; Note: the stack pointer does not need to be set up.
+ 52++ 609E ~
+ 53++ 609E                  ENDM
+ 54++ 609E
+ 55++ 609E
+ 56++ 609E                  ; Macro that must be used at the end of the test case (instead of a ret).
+ 57++ 609E                  MACRO TC_END
+ 58++ 609E ~                    jp UNITTEST_TEST_READY_SUCCESS
+ 59++ 609E                  ENDM
+ 60++ 609E
+ 61++ 609E
+ 62++ 609E                  ; Tests a memory address for a specific byte value.
+ 63++ 609E                  MACRO TEST_MEMORY_BYTE addr?, value?
+ 64++ 609E ~                    ld (UNITTEST_SAVE_REG),a
+ 65++ 609E ~                    ld a,(addr?)
+ 66++ 609E ~                    cp value?
+ 67++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+ 68++ 609E ~                    ld a,(UNITTEST_SAVE_REG)
+ 69++ 609E                  ENDM
+ 70++ 609E
+ 71++ 609E                  ; Tests a memory address for a specific word value.
+ 72++ 609E                  ; If the test fails the '(addr)' can be found in DE.
+ 73++ 609E                  MACRO TEST_MEMORY_WORD addr?, value?
+ 74++ 609E ~                    push de
+ 75++ 609E ~                    push hl
+ 76++ 609E ~                    ld hl,value?
+ 77++ 609E ~                    ld de,(addr?)
+ 78++ 609E ~                    or a
+ 79++ 609E ~                    sbc hl,de
+ 80++ 609E ~                    pop hl
+ 81++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+ 82++ 609E ~                    pop de
+ 83++ 609E                  ENDM
+ 84++ 609E
+ 85++ 609E                  ; Creates a failure when reached.
+ 86++ 609E                  MACRO TEST_FAIL
+ 87++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+ 88++ 609E                  ENDM
+ 89++ 609E
+ 90++ 609E                  ; Tests A for a specific value.
+ 91++ 609E                  MACRO TEST_A value?
+ 92++ 609E ~                    cp value?
+ 93++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+ 94++ 609E ~                    nop
+ 95++ 609E                  ENDM
+ 96++ 609E
+ 97++ 609E                  ; Tests that A is not equal to a specific value.
+ 98++ 609E                  MACRO TEST_A_UNEQUAL value?
+ 99++ 609E ~                    cp value?
+100++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+101++ 609E ~                    nop
+102++ 609E                  ENDM
+103++ 609E
+104++ 609E                  ; Tests a single register for a specific value.
+105++ 609E                  ; E.g. TEST_REG b, 6 ; Tests if register b == 6
+106++ 609E                  MACRO TEST_REG reg?, value?
+107++ 609E ~                    ld (UNITTEST_SAVE_REG),a
+108++ 609E ~                    ld a,reg?
+109++ 609E ~                    cp value?
+110++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+111++ 609E ~                    ld a,(UNITTEST_SAVE_REG)
+112++ 609E                  ENDM
+113++ 609E
+114++ 609E                  ; Tests that a single register is not a specific value.
+115++ 609E                  ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
+116++ 609E                  MACRO TEST_REG_UNEQUAL reg?, value?
+117++ 609E ~                    ld (UNITTEST_SAVE_REG),a
+118++ 609E ~                    ld a,reg?
+119++ 609E ~                    cp value?
+120++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+121++ 609E ~                    ld a,(UNITTEST_SAVE_REG)
+122++ 609E                  ENDM
+123++ 609E
+124++ 609E                  ; Tests a double register for a specific value.
+125++ 609E                  ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
+126++ 609E                  MACRO TEST_DREG dreg?, value?
+127++ 609E ~                    push de
+128++ 609E ~                    push hl
+129++ 609E ~                    push dreg?
+130++ 609E ~                    pop hl
+131++ 609E ~                    ld de,value?
+132++ 609E ~                    or a
+133++ 609E ~                    sbc hl,de
+134++ 609E ~                    pop hl
+135++ 609E ~                    pop de
+136++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+137++ 609E ~                    nop
+138++ 609E                  ENDM
+139++ 609E
+140++ 609E
+141++ 609E                   ; Tests a double register for a specific value.
+142++ 609E                  ; E.g. TEST_REG hl, label1 ; Tests if register hl == label1
+143++ 609E                  MACRO TEST_DREG_UNEQUAL dreg?, value?
+144++ 609E ~                    push de
+145++ 609E ~                    push hl
+146++ 609E ~                    push dreg?
+147++ 609E ~                    pop hl
+148++ 609E ~                    ld de,value?
+149++ 609E ~                    or a
+150++ 609E ~                    sbc hl,de
+151++ 609E ~                    pop hl
+152++ 609E ~                    pop de
+153++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+154++ 609E ~                    nop
+155++ 609E                  ENDM
+156++ 609E
+157++ 609E
+158++ 609E                  ; Test two registers for equality.
+159++ 609E                  ; Testcase fails if registers are not equal.
+160++ 609E                  MACRO TEST_DREGS dreg1?, dreg2?
+161++ 609E ~                    push de
+162++ 609E ~                    push hl
+163++ 609E ~                    push dreg1?
+164++ 609E ~                    push dreg2?
+165++ 609E ~                    pop de
+166++ 609E ~                    pop hl
+167++ 609E ~                    or a
+168++ 609E ~                    sbc hl,de
+169++ 609E ~                    pop hl
+170++ 609E ~                    pop de
+171++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+172++ 609E ~                    nop
+173++ 609E                  ENDM
+174++ 609E
+175++ 609E
+176++ 609E                  ; Test two registers for unequality.
+177++ 609E                  ; Testcase fails if registers are equal.
+178++ 609E                  MACRO TEST_DREGS_UNEQUAL dreg1?, dreg2?
+179++ 609E ~                    push de
+180++ 609E ~                    push hl
+181++ 609E ~                    push dreg1?
+182++ 609E ~                    push dreg2?
+183++ 609E ~                    pop de
+184++ 609E ~                    pop hl
+185++ 609E ~                    or a
+186++ 609E ~                    sbc hl,de
+187++ 609E ~                    pop hl
+188++ 609E ~                    pop de
+189++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+190++ 609E ~                    nop
+191++ 609E                  ENDM
+192++ 609E
+193++ 609E
+194++ 609E                  ; Compares 2 memory areas containing null terminated strings.
+195++ 609E                  ; addr1 = the first string
+196++ 609E                  ; addr2 = the second string
+197++ 609E                  MACRO TEST_STRING_PTR addr1?, addr2?
+198++ 609E ~                    push af
+199++ 609E ~                    push hl
+200++ 609E ~                    push de
+201++ 609E ~                    ld de,addr2?
+202++ 609E ~                    ld hl,addr1?
+203++ 609E ~            .loop:
+204++ 609E ~                    ld a,(de)
+205++ 609E ~                    ; Check for null termination
+206++ 609E ~                    cp (hl)
+207++ 609E ~                    jr nz,.not_equal
+208++ 609E ~                    or a
+209++ 609E ~                    jr z,.null_found
+210++ 609E ~                    inc de
+211++ 609E ~                    inc hl
+212++ 609E ~                    jr .loop
+213++ 609E ~
+214++ 609E ~            .not_equal:
+215++ 609E ~                    ; Strings are not equal
+216++ 609E ~                    pop de
+217++ 609E ~                    pop hl
+218++ 609E ~                    pop af
+219++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+220++ 609E ~                    jr .end
+221++ 609E ~
+222++ 609E ~            .null_found:
+223++ 609E ~                    pop de
+224++ 609E ~                    pop hl
+225++ 609E ~                    pop af
+226++ 609E ~            .end:
+227++ 609E                  ENDM
+228++ 609E
+229++ 609E
+230++ 609E                  ; Tests a memory address for a specific string.
+231++ 609E                  ; addr = the tested string
+232++ 609E                  ; string = the compared string, e.g. "STRING"
+233++ 609E                  ; term0 = If 0 it is also tested that the string (addr) is null terminated
+234++ 609E                  MACRO TEST_STRING addr?, string?, term0?
+235++ 609E ~                    push af
+236++ 609E ~                    push hl
+237++ 609E ~                    push de
+238++ 609E ~                    ld de,.comp_string
+239++ 609E ~                    ld hl,addr?
+240++ 609E ~            .loop:
+241++ 609E ~                    ld a,(de)
+242++ 609E ~                    ; Check for null termination
+243++ 609E ~                    or a
+244++ 609E ~                    jr z,.null_found
+245++ 609E ~                    cp (hl)
+246++ 609E ~                    inc de
+247++ 609E ~                    inc hl
+248++ 609E ~                    jr z,.loop
+249++ 609E ~
+250++ 609E ~            .not_equal:
+251++ 609E ~                    ; Strings are not equal
+252++ 609E ~                    pop de
+253++ 609E ~                    pop hl
+254++ 609E ~                    pop af
+255++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+256++ 609E ~                    jr .end
+257++ 609E ~
+258++ 609E ~            .comp_string:
+259++ 609E ~                    defb string?, 0
+260++ 609E ~
+261++ 609E ~            .null_found:
+262++ 609E ~                    ; We are at the end of the compare string.
+263++ 609E ~                    ; Check if null termination should be compared with the tested string.
+264++ 609E ~                  IF term0? == 0
+265++ 609E ~                    cp (hl)
+266++ 609E ~                    jr nz,.not_equal
+267++ 609E ~                  ENDIF
+268++ 609E ~
+269++ 609E ~                    pop de
+270++ 609E ~                    pop hl
+271++ 609E ~                    pop af
+272++ 609E ~            .end:
+273++ 609E                  ENDM
+274++ 609E
+275++ 609E
+276++ 609E                  ; Tests a memory address for a specific string.
+277++ 609E                  ; addr1 = the tested memory area
+278++ 609E                  ; addr2 = the memory area to compare to
+279++ 609E                  ; count = the number of elements to compare
+280++ 609E                  MACRO TEST_MEM_CMP addr1?, addr2?, count?
+281++ 609E ~                    push af
+282++ 609E ~                    push hl
+283++ 609E ~                    push de
+284++ 609E ~                    push bc
+285++ 609E ~                    ld de,addr2?
+286++ 609E ~                    ld hl,addr1?
+287++ 609E ~                    ld bc,count?
+288++ 609E ~            .loop:
+289++ 609E ~                    ld a,(de)
+290++ 609E ~                    ; Compare
+291++ 609E ~                    cpi      ; cp (hl++); dec bc
+292++ 609E ~                    jr nz,.not_equal
+293++ 609E ~                    inc de
+294++ 609E ~                    jp pe,.loop
+295++ 609E ~
+296++ 609E ~                    ; Memory is equal
+297++ 609E ~                    pop bc
+298++ 609E ~                    pop de
+299++ 609E ~                    pop hl
+300++ 609E ~                    pop af
+301++ 609E ~                    jr .end
+302++ 609E ~
+303++ 609E ~            .not_equal:
+304++ 609E ~                    ; Memory areas are not equal
+305++ 609E ~                    pop bc
+306++ 609E ~                    pop de
+307++ 609E ~                    pop hl
+308++ 609E ~                    pop af
+309++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+310++ 609E ~                    jr .end
+311++ 609E ~            .end:
+312++ 609E                  ENDM
+313++ 609E
+314++ 609E
+315++ 609E                  ; Initializes the registers with default values.
+316++ 609E                  ; Use before the tested function is called.
+317++ 609E                  ; After the call the TEST_UNCHANGED_XX tests can be used
+318++ 609E                  ; to check if the register was changed.
+319++ 609E                  MACRO DEFAULT_REGS
+320++ 609E ~                    ld a,0xAA
+321++ 609E ~                    ld bc,0xBBCC
+322++ 609E ~                    ld de,0xDDEE
+323++ 609E ~                    ld hl,0x8899
+324++ 609E                  ENDM
+325++ 609E
+326++ 609E                  MACRO TEST_UNCHANGED_BC
+327++ 609E ~                    push hl
+328++ 609E ~                    ld hl,0xBBCC
+329++ 609E ~                    or a
+330++ 609E ~                    sbc hl,bc
+331++ 609E ~                    pop hl
+332++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+333++ 609E ~                    nop
+334++ 609E                  ENDM
+335++ 609E
+336++ 609E                  MACRO TEST_UNCHANGED_DE
+337++ 609E ~                    push hl
+338++ 609E ~                    ld hl,0xDDEE
+339++ 609E ~                    or a
+340++ 609E ~                    sbc hl,de
+341++ 609E ~                    pop hl
+342++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+343++ 609E ~                    nop
+344++ 609E                  ENDM
+345++ 609E
+346++ 609E                  MACRO TEST_UNCHANGED_HL
+347++ 609E ~                    push de
+348++ 609E ~                    ld de,0x8899
+349++ 609E ~                    or a
+350++ 609E ~                    sbc hl,de
+351++ 609E ~                    add hl,de   ; restore hl without affecting the flags
+352++ 609E ~                    pop de
+353++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+354++ 609E ~                    nop
+355++ 609E                  ENDM
+356++ 609E
+357++ 609E                  MACRO TEST_UNCHANGED_BC_DE
+358++ 609E ~                    TEST_UNCHANGED_BC
+359++ 609E ~                    TEST_UNCHANGED_DE
+360++ 609E                  ENDM
+361++ 609E
+362++ 609E                  MACRO TEST_UNCHANGED_BC_DE_HL
+363++ 609E ~                    TEST_UNCHANGED_BC_DE
+364++ 609E ~                    TEST_UNCHANGED_HL
+365++ 609E                  ENDM
+366++ 609E
+367++ 609E                  MACRO TEST_UNCHANGED_A
+368++ 609E ~                    TEST_A 0xAA
+369++ 609E                  ENDM
+370++ 609E
+371++ 609E                  MACRO TEST_UNCHANGED_B
+372++ 609E ~                    TEST_REG b, 0xBB
+373++ 609E                  ENDM
+374++ 609E
+375++ 609E                  MACRO TEST_UNCHANGED_C
+376++ 609E ~                    TEST_REG c, 0xCC
+377++ 609E                  ENDM
+378++ 609E
+379++ 609E                  MACRO TEST_UNCHANGED_D
+380++ 609E ~                    TEST_REG d, 0xDD
+381++ 609E                  ENDM
+382++ 609E
+383++ 609E                  MACRO TEST_UNCHANGED_E
+384++ 609E ~                    TEST_REG e, 0xEE
+385++ 609E                  ENDM
+386++ 609E
+387++ 609E                  MACRO TEST_UNCHANGED_H
+388++ 609E ~                    TEST_REG h, 0x88
+389++ 609E                  ENDM
+390++ 609E
+391++ 609E                  MACRO TEST_UNCHANGED_L
+392++ 609E ~                    TEST_REG l, 0x99
+393++ 609E                  ENDM
+394++ 609E
+395++ 609E
+396++ 609E                  ; Macro to test flags for Z.
+397++ 609E                  ; Testcase fails for NZ.
+398++ 609E                  MACRO TEST_FLAG_Z
+399++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+400++ 609E ~                    nop
+401++ 609E                  ENDM
+402++ 609E
+403++ 609E
+404++ 609E                  ; Macro to test flags for NZ.
+405++ 609E                  ; Testcase fails for Z.
+406++ 609E                  MACRO TEST_FLAG_NZ
+407++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+408++ 609E ~                    nop
+409++ 609E                  ENDM
+410++ 609E
+411++ 609E
+412++ 609E                  ; This macro uses all registers, also the shadow registers.
+413++ 609E                  MACRO USE_ALL_REGS
+414++ 609E ~                    ld a,0xCD
+415++ 609E ~                    ld bc,0xBBCC
+416++ 609E ~                    ld de,0xDDEE
+417++ 609E ~                    ld hl,0xFF11
+418++ 609E ~                    ld ix,0x7788
+419++ 609E ~                    ld iy,0x99AA
+420++ 609E ~                    exx
+421++ 609E ~                   	ex af,af'
+422++ 609E ~                    ld a,0xDC
+423++ 609E ~                    ld bc,0x1122
+424++ 609E ~                    ld de,0x3344
+425++ 609E ~                    ld hl,0x5566
+426++ 609E ~                   	ex af,af'
+427++ 609E ~                    exx
+428++ 609E                  ENDM
+429++ 609E
+430++ 609E                  ; This macro uses all registers with different values, also the shadow registers.
+431++ 609E                  MACRO USE_ALL_REGS2
+432++ 609E ~                    ld a,0xC2
+433++ 609E ~                    ld bc,0xB2C2
+434++ 609E ~                    ld de,0xD2E2
+435++ 609E ~                    ld hl,0xF212
+436++ 609E ~                    ld ix,0x7282
+437++ 609E ~                    ld iy,0x92A2
+438++ 609E ~                    exx
+439++ 609E ~                   	ex af,af'
+440++ 609E ~                    ld a,0xD2
+441++ 609E ~                    ld bc,0x1223
+442++ 609E ~                    ld de,0x3242
+443++ 609E ~                    ld hl,0x5262
+444++ 609E ~                   	ex af,af'
+445++ 609E ~                    exx
+446++ 609E                  ENDM
+447++ 609E
+448++ 609E                  ; sjasmplus end
+449++ 609E                  ; -----------------------------------------------------------
+450++ 609E
+451++ 609E
+452++ 609E                ELSE
+453++ 609E ~                ; -----------------------------------------------------------
+454++ 609E ~
+455++ 609E ~                ; -------------------------------------------------------
+456++ 609E ~                ; Code for e.g. Savannah's z80asm, maybe others.
+457++ 609E ~
+458++ 609E ~            UNITTEST_INITIALIZE:    MACRO
+459++ 609E ~
+460++ 609E ~                ; Called to call each unit test.
+461++ 609E ~            UNITTEST_TEST_WRAPPER:  di
+462++ 609E ~                    ld sp,UNITTEST_STACK
+463++ 609E ~            UNITTEST_CALL_ADDR: call 0x0000 ; Will be changed by the z80 unit tests.
+464++ 609E ~                    nop
+465++ 609E ~
+466++ 609E ~            UNITTEST_TEST_READY_RETURN_FAILURE: jr UNITTEST_TEST_READY_RETURN_FAILURE	; A breakpoint will be set here. The unit test will normally not return here but at UNITTEST_TEST_READY_SUCCESS
+467++ 609E ~
+468++ 609E ~            UNITTEST_TEST_READY_FAILURE:    nop
+469++ 609E ~            UNITTEST_TEST_READY_FAILURE_BREAKPOINT: ret 	; A breakpoint will be set here. The next step will return to the failed test case
+470++ 609E ~
+471++ 609E ~            UNITTEST_TEST_READY_SUCCESS:    jr UNITTEST_TEST_READY_SUCCESS	; A breakpoint will be set here.
+472++ 609E ~
+473++ 609E ~
+474++ 609E ~            UNITTEST_MIN_STACK_GUARD:   defw 0	; A write watchpoint will be set here to guard the stack
+475++ 609E ~                    defs 2*50	; Stack depth of 50 should be enough
+476++ 609E ~            UNITTEST_STACK: defw 0
+477++ 609E ~            UNITTEST_MAX_STACK_GUARD:   defw 0	; A write watchpoint will be set here to guard the stack
+478++ 609E ~
+479++ 609E ~            UNITTEST_SAVE_REG:  defw 0  ; Used to save register values.
+480++ 609E ~
+481++ 609E ~
+482++ 609E ~                ; The unit test initialization. Provided by the user.
+483++ 609E ~            UNITTEST_START: di       ; Disable interrupts
+484++ 609E ~                    ; Flow through.
+485++ 609E ~                    ; Directly after the UNITTEST_INITIALIZE macro the user
+486++ 609E ~                    ; should put his test initialization code.
+487++ 609E ~                    ; Note: the stack pointer does not need to be set up.
+488++ 609E ~
+489++ 609E ~                ENDM
+490++ 609E ~
+491++ 609E ~
+492++ 609E ~                ; Macro that must be used at the end of the test case (instead of a ret).
+493++ 609E ~            TC_END:    MACRO
+494++ 609E ~                    jp UNITTEST_TEST_READY_SUCCESS
+495++ 609E ~                ENDM
+496++ 609E ~
+497++ 609E ~
+498++ 609E ~
+499++ 609E ~                ; Tests a memory address for a specific byte value.
+500++ 609E ~            TEST_MEMORY_BYTE:    MACRO addr value
+501++ 609E ~                    ld (UNITTEST_SAVE_REG),a
+502++ 609E ~                    ld a,(addr)
+503++ 609E ~                    cp value
+504++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+505++ 609E ~                    ld a,(UNITTEST_SAVE_REG)
+506++ 609E ~                ENDM
+507++ 609E ~
+508++ 609E ~                ; Tests a memory address for a specific word value.
+509++ 609E ~                ; If the test fails the '(addr)' can be found in DE.
+510++ 609E ~            TEST_MEMORY_WORD:    MACRO addr value
+511++ 609E ~                    push de
+512++ 609E ~                    push hl
+513++ 609E ~                    ld hl,value
+514++ 609E ~                    ld de,(addr)
+515++ 609E ~                    or a
+516++ 609E ~                    sbc hl,de
+517++ 609E ~                    pop hl
+518++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+519++ 609E ~                    pop de
+520++ 609E ~                ENDM
+521++ 609E ~
+522++ 609E ~               ; Creates a failure when reached.
+523++ 609E ~            TEST_FAIL:  MACRO
+524++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+525++ 609E ~                ENDM
+526++ 609E ~
+527++ 609E ~                ; Tests A for a specific value.
+528++ 609E ~            TEST_A:    MACRO value
+529++ 609E ~                    cp value
+530++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+531++ 609E ~                    nop
+532++ 609E ~                ENDM
+533++ 609E ~
+534++ 609E ~                ; Tests that A is not equal to a specific value.
+535++ 609E ~            TEST_A_UNEQUAL:    MACRO value
+536++ 609E ~                    cp value
+537++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+538++ 609E ~                    nop
+539++ 609E ~                ENDM
+540++ 609E ~
+541++ 609E ~                ; Tests a single register for a specific value.
+542++ 609E ~                ; E.g. TEST_REG b, 6 ; Tests if register b == 6
+543++ 609E ~            TEST_REG:    MACRO reg value
+544++ 609E ~                    ld (UNITTEST_SAVE_REG),a
+545++ 609E ~                    ld a,reg
+546++ 609E ~                    cp value
+547++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+548++ 609E ~                    ld a,(UNITTEST_SAVE_REG)
+549++ 609E ~                ENDM
+550++ 609E ~
+551++ 609E ~                ; Tests that a single register is not a specific value.
+552++ 609E ~                ; E.g. TEST_REG_UNEQUAL b, 6 ; Tests if register b != 6
+553++ 609E ~            TEST_REG_UNEQUAL:    MACRO reg value
+554++ 609E ~                    ld (UNITTEST_SAVE_REG),a
+555++ 609E ~                    ld a,reg
+556++ 609E ~                    cp value
+557++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+558++ 609E ~                    ld a,(UNITTEST_SAVE_REG)
+559++ 609E ~                ENDM
+560++ 609E ~
+561++ 609E ~                ; Tests a double register for a specific value.
+562++ 609E ~                ; E.g. TEST_DREG hl, label1 ; Tests if register hl == label1
+563++ 609E ~            TEST_DREG:    MACRO dreg value
+564++ 609E ~                    push de
+565++ 609E ~                    push hl
+566++ 609E ~                    push dreg
+567++ 609E ~                    pop hl
+568++ 609E ~                    ld de,value
+569++ 609E ~                    or a
+570++ 609E ~                    sbc hl,de
+571++ 609E ~                    pop hl
+572++ 609E ~                    pop de
+573++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+574++ 609E ~                    nop
+575++ 609E ~                ENDM
+576++ 609E ~
+577++ 609E ~                ; Tests a double register is not a specific value.
+578++ 609E ~                ; E.g. TEST_DREG_UNEQUAL hl, label1 ; Tests if register hl != label1
+579++ 609E ~            TEST_DREG_UNEQUAL:    MACRO dreg value
+580++ 609E ~                    push de
+581++ 609E ~                    push hl
+582++ 609E ~                    push dreg
+583++ 609E ~                    pop hl
+584++ 609E ~                    ld de,value
+585++ 609E ~                    or a
+586++ 609E ~                    sbc hl,de
+587++ 609E ~                    pop hl
+588++ 609E ~                    pop de
+589++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+590++ 609E ~                    nop
+591++ 609E ~                ENDM
+592++ 609E ~
+593++ 609E ~
+594++ 609E ~                ; Test two registers for equality.
+595++ 609E ~                ; Testcase fails if registers are not equal.
+596++ 609E ~            TEST_DREGS:    MACRO dreg1 dreg2
+597++ 609E ~                    push de
+598++ 609E ~                    push hl
+599++ 609E ~                    push dreg1
+600++ 609E ~                    push dreg2
+601++ 609E ~                    pop de
+602++ 609E ~                    pop hl
+603++ 609E ~                    or a
+604++ 609E ~                    sbc hl,de
+605++ 609E ~                    pop de
+606++ 609E ~                    pop hl
+607++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+608++ 609E ~                    nop
+609++ 609E ~                ENDM
+610++ 609E ~
+611++ 609E ~
+612++ 609E ~                ; Test two registers for unequality.
+613++ 609E ~                ; Testcase fails if registers are equal.
+614++ 609E ~            TEST_DREGS_UNEQUAL:    MACRO dreg1 dreg2
+615++ 609E ~                    push de
+616++ 609E ~                    push hl
+617++ 609E ~                    push dreg1
+618++ 609E ~                    push dreg2
+619++ 609E ~                    pop de
+620++ 609E ~                    pop hl
+621++ 609E ~                    or a
+622++ 609E ~                    sbc hl,de
+623++ 609E ~                    pop de
+624++ 609E ~                    pop hl
+625++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+626++ 609E ~                    nop
+627++ 609E ~                ENDM
+628++ 609E ~
+629++ 609E ~                ; Compares 2 memory areas containing null terminated strings.
+630++ 609E ~                ; addr1 = the first string
+631++ 609E ~                ; addr2 = the second string
+632++ 609E ~            TEST_STRING_PTR:    MACRO addr1, addr2
+633++ 609E ~                    push af
+634++ 609E ~                    push hl
+635++ 609E ~                    push de
+636++ 609E ~                    ld de,addr2
+637++ 609E ~                    ld hl,addr1?
+638++ 609E ~            .loop:
+639++ 609E ~                    ld a,(de)
+640++ 609E ~                    ; Check for null termination
+641++ 609E ~                    cp (hl)
+642++ 609E ~                    jr nz,.not_equal
+643++ 609E ~                    or a
+644++ 609E ~                    jr z,.null_found
+645++ 609E ~                    inc de
+646++ 609E ~                    inc hl
+647++ 609E ~                    jr .loop
+648++ 609E ~
+649++ 609E ~            .not_equal:
+650++ 609E ~                    ; Strings are not equal
+651++ 609E ~                    pop de
+652++ 609E ~                    pop hl
+653++ 609E ~                    pop af
+654++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+655++ 609E ~                    jr .end
+656++ 609E ~
+657++ 609E ~            .null_found:
+658++ 609E ~                    pop de
+659++ 609E ~                    pop hl
+660++ 609E ~                    pop af
+661++ 609E ~            .end:
+662++ 609E ~                ENDM
+663++ 609E ~
+664++ 609E ~
+665++ 609E ~                ; Tests a memory address for a specific string.
+666++ 609E ~                ; addr = the tested string
+667++ 609E ~                ; string = the compared string
+668++ 609E ~                ; term0 = If 0 it is also tested that the string (addr) is null terminated
+669++ 609E ~            TEST_STRING:    MACRO addr string term0
+670++ 609E ~                    push af
+671++ 609E ~                    push hl
+672++ 609E ~                    push de
+673++ 609E ~                    ld de,.comp_string
+674++ 609E ~                    ld hl,addr?
+675++ 609E ~            .loop:
+676++ 609E ~                    ld a,(de)
+677++ 609E ~                    ; Check for null termination
+678++ 609E ~                    or a
+679++ 609E ~                    jr z,.null_found
+680++ 609E ~                    cp (hl)
+681++ 609E ~                    inc de
+682++ 609E ~                    inc hl
+683++ 609E ~                    jr z,.loop
+684++ 609E ~
+685++ 609E ~            .not_equal:
+686++ 609E ~                    ; Strings are not equal
+687++ 609E ~                    pop de
+688++ 609E ~                    pop hl
+689++ 609E ~                    pop af
+690++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+691++ 609E ~                    jr .end
+692++ 609E ~
+693++ 609E ~            .comp_string:
+694++ 609E ~                    defb string, 0
+695++ 609E ~
+696++ 609E ~            .null_found:
+697++ 609E ~                    ; We are at the end of the compare string.
+698++ 609E ~                    ; Check if null termination should be compared with the tested string.
+699++ 609E ~                  IF term0 == 0
+700++ 609E ~                    cp (hl)
+701++ 609E ~                    jr nz,.not_equal
+702++ 609E ~                  ENDIF
+703++ 609E ~
+704++ 609E ~                    pop de
+705++ 609E ~                    pop hl
+706++ 609E ~                    pop af
+707++ 609E ~            .end:
+708++ 609E ~                ENDM
+709++ 609E ~
+710++ 609E ~
+711++ 609E ~                ; Tests a memory address for a specific string.
+712++ 609E ~                ; addr1 = the tested memory area
+713++ 609E ~                ; addr2 = the memory area to compare to
+714++ 609E ~                ; count = the number of elements to compare
+715++ 609E ~            TEST_MEM_CMP:   MACRO addr1, addr2, count
+716++ 609E ~                    push af
+717++ 609E ~                    push hl
+718++ 609E ~                    push de
+719++ 609E ~                    push bc
+720++ 609E ~                    ld de,addr2
+721++ 609E ~                    ld hl,addr1
+722++ 609E ~                    ld bc,count
+723++ 609E ~            .loop:
+724++ 609E ~                    ld a,(de)
+725++ 609E ~                    ; Compare
+726++ 609E ~                    cpi      ; cp (hl++); dec bc
+727++ 609E ~                    jr nz,.not_equal
+728++ 609E ~                    inc de
+729++ 609E ~                    jp pe,.loop
+730++ 609E ~
+731++ 609E ~                    ; Memory is equal
+732++ 609E ~                    pop bc
+733++ 609E ~                    pop de
+734++ 609E ~                    pop hl
+735++ 609E ~                    pop af
+736++ 609E ~                    jr .end
+737++ 609E ~
+738++ 609E ~            .not_equal:
+739++ 609E ~                    ; Memory areas are not equal
+740++ 609E ~                    pop bc
+741++ 609E ~                    pop de
+742++ 609E ~                    pop hl
+743++ 609E ~                    pop af
+744++ 609E ~                    call UNITTEST_TEST_READY_FAILURE
+745++ 609E ~                    jr .end
+746++ 609E ~            .end:
+747++ 609E ~                ENDM
+748++ 609E ~
+749++ 609E ~
+750++ 609E ~                ; Initializes the registers with default values.
+751++ 609E ~                ; Use before the tested function is called.
+752++ 609E ~                ; After the call the TEST_UNCHANGED_XX tests can be used
+753++ 609E ~                ; to check if the register was changed.
+754++ 609E ~            DEFAULT_REGS:    MACRO
+755++ 609E ~                    ld a,0xAA
+756++ 609E ~                    ld bc,0xBBCC
+757++ 609E ~                    ld de,0xDDEE
+758++ 609E ~                    ld hl,0x8899
+759++ 609E ~                ENDM
+760++ 609E ~
+761++ 609E ~            TEST_UNCHANGED_BC:    MACRO
+762++ 609E ~                    push hl
+763++ 609E ~                    ld hl,0xBBCC
+764++ 609E ~                    or a
+765++ 609E ~                    sbc hl,bc
+766++ 609E ~                    pop hl
+767++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+768++ 609E ~                    nop
+769++ 609E ~                ENDM
+770++ 609E ~
+771++ 609E ~            TEST_UNCHANGED_DE:    MACRO
+772++ 609E ~                    push hl
+773++ 609E ~                    ld hl,0xDDEE
+774++ 609E ~                    or a
+775++ 609E ~                    sbc hl,de
+776++ 609E ~                    pop hl
+777++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+778++ 609E ~                    nop
+779++ 609E ~                ENDM
+780++ 609E ~
+781++ 609E ~            TEST_UNCHANGED_HL:    MACRO
+782++ 609E ~                    push de
+783++ 609E ~                    ld de,0x8899
+784++ 609E ~                    or a
+785++ 609E ~                    sbc hl,de
+786++ 609E ~                    add hl,de   ; restore hl without affecting the flags
+787++ 609E ~                    pop de
+788++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+789++ 609E ~                    nop
+790++ 609E ~                ENDM
+791++ 609E ~
+792++ 609E ~            TEST_UNCHANGED_BC_DE:    MACRO
+793++ 609E ~                    TEST_UNCHANGED_BC
+794++ 609E ~                    TEST_UNCHANGED_DE
+795++ 609E ~                ENDM
+796++ 609E ~
+797++ 609E ~            TEST_UNCHANGED_BC_DE_HL:    MACRO
+798++ 609E ~                    TEST_UNCHANGED_BC_DE
+799++ 609E ~                    TEST_UNCHANGED_HL
+800++ 609E ~                ENDM
+801++ 609E ~
+802++ 609E ~            TEST_UNCHANGED_A:    MACRO
+803++ 609E ~                    TEST_A 0xAA
+804++ 609E ~                ENDM
+805++ 609E ~
+806++ 609E ~            TEST_UNCHANGED_B:    MACRO
+807++ 609E ~                    TEST_REG b, 0xBB
+808++ 609E ~                ENDM
+809++ 609E ~
+810++ 609E ~            TEST_UNCHANGED_C:    MACRO
+811++ 609E ~                    TEST_REG c, 0xCC
+812++ 609E ~                ENDM
+813++ 609E ~
+814++ 609E ~            TEST_UNCHANGED_D:    MACRO
+815++ 609E ~                    TEST_REG d, 0xDD
+816++ 609E ~                ENDM
+817++ 609E ~
+818++ 609E ~            TEST_UNCHANGED_E:    MACRO
+819++ 609E ~                    TEST_REG e, 0xEE
+820++ 609E ~                ENDM
+821++ 609E ~
+822++ 609E ~            TEST_UNCHANGED_H:    MACRO
+823++ 609E ~                    TEST_REG h, 0x88
+824++ 609E ~                ENDM
+825++ 609E ~
+826++ 609E ~            TEST_UNCHANGED_L:    MACRO
+827++ 609E ~                    TEST_REG l, 0x99
+828++ 609E ~                ENDM
+829++ 609E ~
+830++ 609E ~
+831++ 609E ~                ; Macro to test flags for Z.
+832++ 609E ~                ; Testcase fails for NZ.
+833++ 609E ~            TEST_FLAG_Z:    MACRO
+834++ 609E ~                    call nz,UNITTEST_TEST_READY_FAILURE
+835++ 609E ~                    nop
+836++ 609E ~                ENDM
+837++ 609E ~
+838++ 609E ~
+839++ 609E ~                ; Macro to test flags for NZ.
+840++ 609E ~                ; Testcase fails for Z.
+841++ 609E ~            TEST_FLAG_NZ:    MACRO
+842++ 609E ~                    call z,UNITTEST_TEST_READY_FAILURE
+843++ 609E ~                    nop
+844++ 609E ~                ENDM
+845++ 609E ~
+846++ 609E ~
+847++ 609E ~                ; This macro uses all registers, also the shadow registers.
+848++ 609E ~            USE_ALL_REGS:    MACRO
+849++ 609E ~                    ld a,0xCD
+850++ 609E ~                    ld bc,0xBBCC
+851++ 609E ~                    ld de,0xDDEE
+852++ 609E ~                    ld hl,0xFF11
+853++ 609E ~                    ld ix,0x7788
+854++ 609E ~                    ld iy,0x99AA
+855++ 609E ~                    exx
+856++ 609E ~                   	ex af,af'
+857++ 609E ~                    ld a,0xDC
+858++ 609E ~                    ld bc,0x1122
+859++ 609E ~                    ld de,0x3344
+860++ 609E ~                    ld hl,0x5566
+861++ 609E ~                   	ex af,af'
+862++ 609E ~                    exx
+863++ 609E ~                ENDM
+864++ 609E ~
+865++ 609E ~                ; This macro uses all registers with different values, also the shadow registers.
+866++ 609E ~            USE_ALL_REGS2:  MACRO
+867++ 609E ~                    ld a,0xC2
+868++ 609E ~                    ld bc,0xB2C2
+869++ 609E ~                    ld de,0xD2E2
+870++ 609E ~                    ld hl,0xF212
+871++ 609E ~                    ld ix,0x7282
+872++ 609E ~                    ld iy,0x92A2
+873++ 609E ~                    exx
+874++ 609E ~                   	ex af,af'
+875++ 609E ~                    ld a,0xD2
+876++ 609E ~                    ld bc,0x1223
+877++ 609E ~                    ld de,0x3242
+878++ 609E ~                    ld hl,0x5262
+879++ 609E ~                   	ex af,af'
+880++ 609E ~                    exx
+881++ 609E ~                ENDM
+882++ 609E ~
+883++ 609E ~
+884++ 609E ~                ; other assemblers end
+885++ 609E ~                ; -----------------------------------------------------------
+886++ 609E                ENDIF
+887++ 609E
 # file closed: unit_tests.inc
-  8+  6075
-  9+  6075
- 10+  6075              ; Initialization routine called before all unit tests are
- 11+  6075              ; started.
- 12+  6075                  UNITTEST_INITIALIZE
- 12+  6075             >
- 12+  6075             >    ; Called to call each unit test.
- 12+  6075             >@UNITTEST_TEST_WRAPPER:
- 12+  6075 F3          >        di
- 12+  6076 31 E9 60    >        ld sp,UNITTEST_STACK
- 12+  6079             >@UNITTEST_CALL_ADDR:
- 12+  6079 CD 00 00    >        call 0x0000 ; Will be changed by the z80 unit tests.
- 12+  607C 00          >        nop
- 12+  607D             >
- 12+  607D             >@UNITTEST_TEST_READY_RETURN_FAILURE:
- 12+  607D 18 FE       >        jr UNITTEST_TEST_READY_RETURN_FAILURE	; A breakpoint will be set here. The unit test will normally not return here but at UNITTEST_TEST_READY_SUCCESS
- 12+  607F             >
- 12+  607F             >@UNITTEST_TEST_READY_FAILURE:
- 12+  607F 00          >        nop
- 12+  6080             >@UNITTEST_TEST_READY_FAILURE_BREAKPOINT:
- 12+  6080 C9          >        ret 	; A breakpoint will be set here. The next step will return to the failed test case
- 12+  6081             >
- 12+  6081             >@UNITTEST_TEST_READY_SUCCESS:
- 12+  6081 18 FE       >        jr UNITTEST_TEST_READY_SUCCESS	; A breakpoint will be set here.
- 12+  6083             >
- 12+  6083             >@UNITTEST_MIN_STACK_GUARD:
- 12+  6083 00 00       >        defw 0	; A write watchpoint will be set here to guard the stack
- 12+  6085 00 00 00... >        defs 2*50	; Stack depth of 50 should be enough
- 12+  60E9             >@UNITTEST_STACK:
- 12+  60E9             >
- 12+  60E9             >@UNITTEST_MAX_STACK_GUARD:
- 12+  60E9 00 00       >        defw 0	; A write watchpoint will be set here to guard the stack
- 12+  60EB             >
- 12+  60EB             >@UNITTEST_SAVE_REG:
- 12+  60EB 00 00       >        defw 0  ; Used to save register values.
- 12+  60ED             >
- 12+  60ED             >
- 12+  60ED             >    ; The unit test initialization. Provided by the user.
- 12+  60ED             >@UNITTEST_START:
- 12+  60ED             >        ; Disable interrupts
- 12+  60ED F3          >        di
- 12+  60EE             >        ; Flow through.
- 12+  60EE             >        ; Directly after the UNITTEST_INITIALIZE macro the user
- 12+  60EE             >        ; should put his test initialization code.
- 12+  60EE             >        ; Note: the stack pointer does not need to be set up.
- 12+  60EE             >
- 13+  60EE                  ; Do your initialization here ...
- 14+  60EE                  ; ...
- 15+  60EE                  ; ...
- 16+  60EE                  ; For this simple example we don't need any special initialization.
- 17+  60EE                  ; So we simply return.
- 18+  60EE                  ; Please note: the stack pointer does not need to be setup explicitly
- 19+  60EE                  ; for the unit tests.
- 20+  60EE C9               ret
- 21+  60EF
- 22+  60EF
- 23+  60EF                  MODULE TestSuite_ClearScreen
- 24+  60EF
- 25+  60EF              ; A unit testcase needs to start with "UT_" (upper case letters).
- 26+  60EF              ; DeZog will collect all these labels and offer them for execution.
- 27+  60EF              UT_clear_screen:
- 28+  60EF                  ; Write some bytes to the screen area
- 29+  60EF 3E FF            ld a,0xFF
- 30+  60F1 32 00 40         ld (SCREEN),a
- 31+  60F4 32 00 4C         ld (SCREEN+SCREEN_SIZE/2),a
- 32+  60F7 32 FF 57         ld (SCREEN+SCREEN_SIZE-1),a
- 33+  60FA 32 00 58         ld (SCREEN+SCREEN_SIZE),a
- 34+  60FD
- 35+  60FD                  ; Now clear the screen
- 36+  60FD CD 48 60         call clear_screen
- 37+  6100
- 38+  6100                  ; Test that all values inside the screen area are cleared
- 39+  6100                  TEST_MEMORY_BYTE SCREEN, 0
- 39+  6100 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 39+  6103 3A 00 40    >        ld a,(SCREEN)
- 39+  6106 FE 00       >        cp 0
- 39+  6108 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 39+  610B 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 40+  610E                  TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE/2, 0
- 40+  610E 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 40+  6111 3A 00 4C    >        ld a,(SCREEN+SCREEN_SIZE/2)
- 40+  6114 FE 00       >        cp 0
- 40+  6116 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 40+  6119 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 41+  611C                  TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE-1, 0
- 41+  611C 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 41+  611F 3A FF 57    >        ld a,(SCREEN+SCREEN_SIZE-1)
- 41+  6122 FE 00       >        cp 0
- 41+  6124 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 41+  6127 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 42+  612A
- 43+  612A                  TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE, 0xFF
- 43+  612A 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 43+  612D 3A 00 58    >        ld a,(SCREEN+SCREEN_SIZE)
- 43+  6130 FE FF       >        cp 0xFF
- 43+  6132 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 43+  6135 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 44+  6138               TC_END
- 44+  6138 C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
- 45+  613B
- 46+  613B
- 47+  613B              ; Tests filling the background.
- 48+  613B              UT_fill_backg:
- 49+  613B                  ; Write some bytes to the screen area
- 50+  613B 3E FF            ld a,0xFF
- 51+  613D 32 00 58         ld (COLOR_SCREEN),a
- 52+  6140 32 80 59         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE/2),a
- 53+  6143 32 FF 5A         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE-1),a
- 54+  6146 32 00 5B         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE),a
- 55+  6149
- 56+  6149                  ; Now fill the background with 128
- 57+  6149 3E 80            ld a,128
- 58+  614B CD 58 60         call fill_backg
- 59+  614E
- 60+  614E                  ; Test that all values inside the screen area are cleared
- 61+  614E                  TEST_MEMORY_BYTE COLOR_SCREEN, 128
- 61+  614E 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 61+  6151 3A 00 58    >        ld a,(COLOR_SCREEN)
- 61+  6154 FE 80       >        cp 128
- 61+  6156 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 61+  6159 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 62+  615C                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE/2, 128
- 62+  615C 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 62+  615F 3A 80 59    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE/2)
- 62+  6162 FE 80       >        cp 128
- 62+  6164 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 62+  6167 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 63+  616A                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE-1, 128
- 63+  616A 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 63+  616D 3A FF 5A    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE-1)
- 63+  6170 FE 80       >        cp 128
- 63+  6172 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 63+  6175 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 64+  6178
- 65+  6178                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE, 0xFF
- 65+  6178 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 65+  617B 3A 00 5B    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE)
- 65+  617E FE FF       >        cp 0xFF
- 65+  6180 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 65+  6183 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 66+  6186               TC_END
- 66+  6186 C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
- 67+  6189
- 68+  6189
- 69+  6189              ; Tests clearing the background.
- 70+  6189              UT_clear_backg:
- 71+  6189                  ; Write some bytes to the screen area
- 72+  6189 3E FF            ld a,0xFF
- 73+  618B 32 00 58         ld (COLOR_SCREEN),a
- 74+  618E 32 80 59         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE/2),a
- 75+  6191 32 FF 5A         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE-1),a
- 76+  6194 32 00 5B         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE),a
- 77+  6197
- 78+  6197                  ; Now clear the background
- 79+  6197 CD 53 60         call clear_backg
- 80+  619A
- 81+  619A                  ; Test that all values inside the screen area are cleared
- 82+  619A                  TEST_MEMORY_BYTE COLOR_SCREEN, 0
- 82+  619A 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 82+  619D 3A 00 58    >        ld a,(COLOR_SCREEN)
- 82+  61A0 FE 00       >        cp 0
- 82+  61A2 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 82+  61A5 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 83+  61A8                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE/2, 0
- 83+  61A8 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 83+  61AB 3A 80 59    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE/2)
- 83+  61AE FE 00       >        cp 0
- 83+  61B0 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 83+  61B3 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 84+  61B6                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE-1, 0
- 84+  61B6 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 84+  61B9 3A FF 5A    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE-1)
- 84+  61BC FE 00       >        cp 0
- 84+  61BE C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 84+  61C1 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 85+  61C4
- 86+  61C4                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE, 0xFF
- 86+  61C4 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
- 86+  61C7 3A 00 5B    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE)
- 86+  61CA FE FF       >        cp 0xFF
- 86+  61CC C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
- 86+  61CF 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
- 87+  61D2               TC_END
- 87+  61D2 C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
- 88+  61D5
- 89+  61D5                  ENDMODULE
- 90+  61D5
- 91+  61D5
- 92+  61D5
- 93+  61D5                  MODULE TestSuite_Fill
- 94+  61D5
- 95+  61D5              ; Tests filling a memory area
- 96+  61D5              UT_fill_memory:
- 97+  61D5                  ; Write some bytes
- 98+  61D5 3E FF            ld a,0xFF
- 99+  61D7 32 3A 62         ld (fill_memory_data-1),a
-100+  61DA 32 3B 62         ld (fill_memory_data),a
-101+  61DD 32 40 62         ld (fill_memory_data+FILL_MEMORY_SIZE/2),a
-102+  61E0 32 44 62         ld (fill_memory_data+FILL_MEMORY_SIZE-1),a
-103+  61E3 32 45 62         ld (fill_memory_data+FILL_MEMORY_SIZE),a
-104+  61E6
-105+  61E6                  ; Now fill the memory area
-106+  61E6 3E 16            ld a,22
-107+  61E8 21 3B 62         ld hl,fill_memory_data
-108+  61EB 01 0A 00         ld bc,FILL_MEMORY_SIZE
-109+  61EE CD 10 60         call fill_memory
-110+  61F1
-111+  61F1                  ; Test that all values inside the screen area are cleared
-112+  61F1                  TEST_MEMORY_BYTE fill_memory_data-1, 0xFF
-112+  61F1 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-112+  61F4 3A 3A 62    >        ld a,(fill_memory_data-1)
-112+  61F7 FE FF       >        cp 0xFF
-112+  61F9 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-112+  61FC 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-113+  61FF                  TEST_MEMORY_BYTE fill_memory_data, 22
-113+  61FF 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-113+  6202 3A 3B 62    >        ld a,(fill_memory_data)
-113+  6205 FE 16       >        cp 22
-113+  6207 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-113+  620A 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-114+  620D                  TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE/2, 22
-114+  620D 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-114+  6210 3A 40 62    >        ld a,(fill_memory_data+FILL_MEMORY_SIZE/2)
-114+  6213 FE 16       >        cp 22
-114+  6215 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-114+  6218 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-115+  621B                  TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE-1, 22
-115+  621B 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-115+  621E 3A 44 62    >        ld a,(fill_memory_data+FILL_MEMORY_SIZE-1)
-115+  6221 FE 16       >        cp 22
-115+  6223 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-115+  6226 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-116+  6229
-117+  6229                  TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE, 0xFF
-117+  6229 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-117+  622C 3A 45 62    >        ld a,(fill_memory_data+FILL_MEMORY_SIZE)
-117+  622F FE FF       >        cp 0xFF
-117+  6231 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-117+  6234 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-118+  6237               TC_END
-118+  6237 C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
-119+  623A
-120+  623A
-121+  623A              FILL_MEMORY_SIZE:   equ 10
-122+  623A 00               defb 0
-123+  623B              fill_memory_data:
-124+  623B 00 00 00...      defs 10
-125+  6245 00               defb 0
-126+  6246
-127+  6246
-128+  6246              ; Tests filling a line in the background color screen.
-129+  6246              UT_fill_bckg_line_normal:
-130+  6246                  ; Initialize background
-131+  6246 CD 53 60         call clear_backg
-132+  6249
-133+  6249                  ; Fill line with color
-134+  6249 3E 18            ld a,MAGENTA
-135+  624B 11 00 58         ld de,COLOR_SCREEN
-136+  624E CD 18 60         call fill_bckg_line
-137+  6251
-138+  6251                  ; Test that line is filled
-139+  6251                  TEST_MEMORY_BYTE COLOR_SCREEN, MAGENTA
-139+  6251 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-139+  6254 3A 00 58    >        ld a,(COLOR_SCREEN)
-139+  6257 FE 18       >        cp MAGENTA
-139+  6259 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-139+  625C 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-140+  625F                  TEST_MEMORY_BYTE COLOR_SCREEN+16, MAGENTA
-140+  625F 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-140+  6262 3A 10 58    >        ld a,(COLOR_SCREEN+16)
-140+  6265 FE 18       >        cp MAGENTA
-140+  6267 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-140+  626A 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-141+  626D                  TEST_MEMORY_BYTE COLOR_SCREEN+31, MAGENTA
-141+  626D 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-141+  6270 3A 1F 58    >        ld a,(COLOR_SCREEN+31)
-141+  6273 FE 18       >        cp MAGENTA
-141+  6275 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-141+  6278 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-142+  627B                  TEST_MEMORY_BYTE COLOR_SCREEN+32, 0
-142+  627B 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-142+  627E 3A 20 58    >        ld a,(COLOR_SCREEN+32)
-142+  6281 FE 00       >        cp 0
-142+  6283 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-142+  6286 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-143+  6289
-144+  6289                  ; Test that de points to the next line
-145+  6289                  TEST_DREG de, COLOR_SCREEN+32
-145+  6289 D5          >        push de
-145+  628A E5          >        push hl
-145+  628B D5          >        push de
-145+  628C E1          >        pop hl
-145+  628D 11 20 58    >        ld de,COLOR_SCREEN+32
-145+  6290 B7          >        or a
-145+  6291 ED 52       >        sbc hl,de
-145+  6293 E1          >        pop hl
-145+  6294 D1          >        pop de
-145+  6295 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-145+  6298 00          >        nop
-146+  6299               TC_END
-146+  6299 C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
-147+  629C
-148+  629C              ; Test wrap around.
-149+  629C              UT_fill_bckg_line_wrap_around:
-150+  629C                  ; Initialize background
-151+  629C CD 53 60         call clear_backg
-152+  629F
-153+  629F                  ; Fill line with color
-154+  629F 3E 18            ld a,MAGENTA
-155+  62A1 11 E0 5A         ld de,COLOR_SCREEN+23*32
-156+  62A4 CD 18 60         call fill_bckg_line
-157+  62A7
-158+  62A7                  ; Test that line is filled
-159+  62A7                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32, MAGENTA
-159+  62A7 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-159+  62AA 3A E0 5A    >        ld a,(COLOR_SCREEN+23*32)
-159+  62AD FE 18       >        cp MAGENTA
-159+  62AF C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-159+  62B2 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-160+  62B5                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32+16, MAGENTA
-160+  62B5 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-160+  62B8 3A F0 5A    >        ld a,(COLOR_SCREEN+23*32+16)
-160+  62BB FE 18       >        cp MAGENTA
-160+  62BD C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-160+  62C0 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-161+  62C3                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32+31, MAGENTA
-161+  62C3 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-161+  62C6 3A FF 5A    >        ld a,(COLOR_SCREEN+23*32+31)
-161+  62C9 FE 18       >        cp MAGENTA
-161+  62CB C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-161+  62CE 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-162+  62D1                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32-1, 0
-162+  62D1 32 EB 60    >        ld (UNITTEST_SAVE_REG),a
-162+  62D4 3A DF 5A    >        ld a,(COLOR_SCREEN+23*32-1)
-162+  62D7 FE 00       >        cp 0
-162+  62D9 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE
-162+  62DC 3A EB 60    >        ld a,(UNITTEST_SAVE_REG)
-163+  62DF
-164+  62DF                  ; Test that de points to the first line (wrap around)
-165+  62DF                  TEST_DREG de, COLOR_SCREEN
-165+  62DF D5          >        push de
-165+  62E0 E5          >        push hl
-165+  62E1 D5          >        push de
-165+  62E2 E1          >        pop hl
-165+  62E3 11 00 58    >        ld de,COLOR_SCREEN
-165+  62E6 B7          >        or a
-165+  62E7 ED 52       >        sbc hl,de
-165+  62E9 E1          >        pop hl
-165+  62EA D1          >        pop de
-165+  62EB C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-165+  62EE 00          >        nop
-166+  62EF               TC_END
-166+  62EF C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
-167+  62F2
-168+  62F2
-169+  62F2              ; Test wrap around.
-170+  62F2              UT_fill_colors_ptr:
-171+  62F2                  ; Start value
-172+  62F2 21 42 60         ld hl,fill_colors
-173+  62F5 22 40 60         ld (fill_colors_ptr),hl
-174+  62F8
-175+  62F8                  ; Test increment
-176+  62F8 CD 2B 60         call inc_fill_colors_ptr
-177+  62FB                  ; Test that pointer is moved to next line
-178+  62FB                  TEST_MEMORY_WORD fill_colors_ptr, fill_colors+1
-178+  62FB D5          >        push de
-178+  62FC E5          >        push hl
-178+  62FD 21 43 60    >        ld hl,fill_colors+1
-178+  6300 ED 5B 40 60 >        ld de,(fill_colors_ptr)
-178+  6304 B7          >        or a
-178+  6305 ED 52       >        sbc hl,de
-178+  6307 E1          >        pop hl
-178+  6308 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-178+  630B D1          >        pop de
-179+  630C
-180+  630C                  ; Test increment
-181+  630C CD 2B 60         call inc_fill_colors_ptr
-182+  630F                  ; Test that pointer is moved to next line
-183+  630F                  TEST_MEMORY_WORD fill_colors_ptr, fill_colors+2
-183+  630F D5          >        push de
-183+  6310 E5          >        push hl
-183+  6311 21 44 60    >        ld hl,fill_colors+2
-183+  6314 ED 5B 40 60 >        ld de,(fill_colors_ptr)
-183+  6318 B7          >        or a
-183+  6319 ED 52       >        sbc hl,de
-183+  631B E1          >        pop hl
-183+  631C C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-183+  631F D1          >        pop de
-184+  6320
-185+  6320                  ; Last value
-186+  6320 21 46 60         ld hl,fill_colors_end-1
-187+  6323 22 40 60         ld (fill_colors_ptr),hl
-188+  6326
-189+  6326                  ; Test increment
-190+  6326 CD 2B 60         call inc_fill_colors_ptr
-191+  6329                  ; Test that pointer wraps around and points to first line
-192+  6329                  TEST_MEMORY_WORD fill_colors_ptr, fill_colors
-192+  6329 D5          >        push de
-192+  632A E5          >        push hl
-192+  632B 21 42 60    >        ld hl,fill_colors
-192+  632E ED 5B 40 60 >        ld de,(fill_colors_ptr)
-192+  6332 B7          >        or a
-192+  6333 ED 52       >        sbc hl,de
-192+  6335 E1          >        pop hl
-192+  6336 C4 7F 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
-192+  6339 D1          >        pop de
-193+  633A               TC_END
-193+  633A C3 81 60    >        jp UNITTEST_TEST_READY_SUCCESS
-194+  633D
-195+  633D                  ENDMODULE
-196+  633D
-197+  633D
+  8+  609E
+  9+  609E
+ 10+  609E              ; Initialization routine called before all unit tests are
+ 11+  609E              ; started.
+ 12+  609E                  UNITTEST_INITIALIZE
+ 12+  609E             >
+ 12+  609E             >    ; Called to call each unit test.
+ 12+  609E             >@UNITTEST_TEST_WRAPPER:
+ 12+  609E F3          >        di
+ 12+  609F 31 12 61    >        ld sp,UNITTEST_STACK
+ 12+  60A2             >@UNITTEST_CALL_ADDR:
+ 12+  60A2 CD 00 00    >        call 0x0000 ; Will be changed by the z80 unit tests.
+ 12+  60A5 00          >        nop
+ 12+  60A6             >
+ 12+  60A6             >@UNITTEST_TEST_READY_RETURN_FAILURE:
+ 12+  60A6 18 FE       >        jr UNITTEST_TEST_READY_RETURN_FAILURE	; A breakpoint will be set here. The unit test will normally not return here but at UNITTEST_TEST_READY_SUCCESS
+ 12+  60A8             >
+ 12+  60A8             >@UNITTEST_TEST_READY_FAILURE:
+ 12+  60A8 00          >        nop
+ 12+  60A9             >@UNITTEST_TEST_READY_FAILURE_BREAKPOINT:
+ 12+  60A9 C9          >        ret 	; A breakpoint will be set here. The next step will return to the failed test case
+ 12+  60AA             >
+ 12+  60AA             >@UNITTEST_TEST_READY_SUCCESS:
+ 12+  60AA 18 FE       >        jr UNITTEST_TEST_READY_SUCCESS	; A breakpoint will be set here.
+ 12+  60AC             >
+ 12+  60AC             >@UNITTEST_MIN_STACK_GUARD:
+ 12+  60AC 00 00       >        defw 0	; A write watchpoint will be set here to guard the stack
+ 12+  60AE 00 00 00... >        defs 2*50	; Stack depth of 50 should be enough
+ 12+  6112             >@UNITTEST_STACK:
+ 12+  6112             >
+ 12+  6112             >@UNITTEST_MAX_STACK_GUARD:
+ 12+  6112 00 00       >        defw 0	; A write watchpoint will be set here to guard the stack
+ 12+  6114             >
+ 12+  6114             >@UNITTEST_SAVE_REG:
+ 12+  6114 00 00       >        defw 0  ; Used to save register values.
+ 12+  6116             >
+ 12+  6116             >
+ 12+  6116             >    ; The unit test initialization. Provided by the user.
+ 12+  6116             >@UNITTEST_START:
+ 12+  6116             >        ; Disable interrupts
+ 12+  6116 F3          >        di
+ 12+  6117             >        ; Flow through.
+ 12+  6117             >        ; Directly after the UNITTEST_INITIALIZE macro the user
+ 12+  6117             >        ; should put his test initialization code.
+ 12+  6117             >        ; Note: the stack pointer does not need to be set up.
+ 12+  6117             >
+ 13+  6117                  ; Do your initialization here ...
+ 14+  6117                  ; ...
+ 15+  6117                  ; ...
+ 16+  6117                  ; For this simple example we don't need any special initialization.
+ 17+  6117                  ; So we simply return.
+ 18+  6117                  ; Please note: the stack pointer does not need to be setup explicitly
+ 19+  6117                  ; for the unit tests.
+ 20+  6117 C9               ret
+ 21+  6118
+ 22+  6118
+ 23+  6118                  MODULE TestSuite_ClearScreen
+ 24+  6118
+ 25+  6118              ; A unit testcase needs to start with "UT_" (upper case letters).
+ 26+  6118              ; DeZog will collect all these labels and offer them for execution.
+ 27+  6118              UT_clear_screen:
+ 28+  6118                  ; Write some bytes to the screen area
+ 29+  6118 3E FF            ld a,0xFF
+ 30+  611A 32 00 40         ld (SCREEN),a
+ 31+  611D 32 00 4C         ld (SCREEN+SCREEN_SIZE/2),a
+ 32+  6120 32 FF 57         ld (SCREEN+SCREEN_SIZE-1),a
+ 33+  6123 32 00 58         ld (SCREEN+SCREEN_SIZE),a
+ 34+  6126
+ 35+  6126                  ; Now clear the screen
+ 36+  6126 CD 5E 60         call clear_screen
+ 37+  6129
+ 38+  6129                  ; Test that all values inside the screen area are cleared
+ 39+  6129                  TEST_MEMORY_BYTE SCREEN, 0
+ 39+  6129 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 39+  612C 3A 00 40    >        ld a,(SCREEN)
+ 39+  612F FE 00       >        cp 0
+ 39+  6131 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 39+  6134 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 40+  6137                  TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE/2, 0
+ 40+  6137 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 40+  613A 3A 00 4C    >        ld a,(SCREEN+SCREEN_SIZE/2)
+ 40+  613D FE 00       >        cp 0
+ 40+  613F C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 40+  6142 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 41+  6145                  TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE-1, 0
+ 41+  6145 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 41+  6148 3A FF 57    >        ld a,(SCREEN+SCREEN_SIZE-1)
+ 41+  614B FE 00       >        cp 0
+ 41+  614D C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 41+  6150 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 42+  6153
+ 43+  6153                  TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE, 0xFF
+ 43+  6153 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 43+  6156 3A 00 58    >        ld a,(SCREEN+SCREEN_SIZE)
+ 43+  6159 FE FF       >        cp 0xFF
+ 43+  615B C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 43+  615E 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 44+  6161               TC_END
+ 44+  6161 C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+ 45+  6164
+ 46+  6164
+ 47+  6164              ; Tests filling the background.
+ 48+  6164              UT_fill_backg:
+ 49+  6164                  ; Write some bytes to the screen area
+ 50+  6164 3E FF            ld a,0xFF
+ 51+  6166 32 00 58         ld (COLOR_SCREEN),a
+ 52+  6169 32 80 59         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE/2),a
+ 53+  616C 32 FF 5A         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE-1),a
+ 54+  616F 32 00 5B         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE),a
+ 55+  6172
+ 56+  6172                  ; Now fill the background with 128
+ 57+  6172 3E 80            ld a,128
+ 58+  6174 CD 6E 60         call fill_backg
+ 59+  6177
+ 60+  6177                  ; Test that all values inside the screen area are cleared
+ 61+  6177                  TEST_MEMORY_BYTE COLOR_SCREEN, 128
+ 61+  6177 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 61+  617A 3A 00 58    >        ld a,(COLOR_SCREEN)
+ 61+  617D FE 80       >        cp 128
+ 61+  617F C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 61+  6182 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 62+  6185                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE/2, 128
+ 62+  6185 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 62+  6188 3A 80 59    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE/2)
+ 62+  618B FE 80       >        cp 128
+ 62+  618D C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 62+  6190 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 63+  6193                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE-1, 128
+ 63+  6193 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 63+  6196 3A FF 5A    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE-1)
+ 63+  6199 FE 80       >        cp 128
+ 63+  619B C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 63+  619E 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 64+  61A1
+ 65+  61A1                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE, 0xFF
+ 65+  61A1 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 65+  61A4 3A 00 5B    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE)
+ 65+  61A7 FE FF       >        cp 0xFF
+ 65+  61A9 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 65+  61AC 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 66+  61AF               TC_END
+ 66+  61AF C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+ 67+  61B2
+ 68+  61B2
+ 69+  61B2              ; Tests clearing the background.
+ 70+  61B2              UT_clear_backg:
+ 71+  61B2                  ; Write some bytes to the screen area
+ 72+  61B2 3E FF            ld a,0xFF
+ 73+  61B4 32 00 58         ld (COLOR_SCREEN),a
+ 74+  61B7 32 80 59         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE/2),a
+ 75+  61BA 32 FF 5A         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE-1),a
+ 76+  61BD 32 00 5B         ld (COLOR_SCREEN+COLOR_SCREEN_SIZE),a
+ 77+  61C0
+ 78+  61C0                  ; Now clear the background
+ 79+  61C0 CD 69 60         call clear_backg
+ 80+  61C3
+ 81+  61C3                  ; Test that all values inside the screen area are cleared
+ 82+  61C3                  TEST_MEMORY_BYTE COLOR_SCREEN, 0
+ 82+  61C3 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 82+  61C6 3A 00 58    >        ld a,(COLOR_SCREEN)
+ 82+  61C9 FE 00       >        cp 0
+ 82+  61CB C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 82+  61CE 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 83+  61D1                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE/2, 0
+ 83+  61D1 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 83+  61D4 3A 80 59    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE/2)
+ 83+  61D7 FE 00       >        cp 0
+ 83+  61D9 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 83+  61DC 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 84+  61DF                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE-1, 0
+ 84+  61DF 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 84+  61E2 3A FF 5A    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE-1)
+ 84+  61E5 FE 00       >        cp 0
+ 84+  61E7 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 84+  61EA 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 85+  61ED
+ 86+  61ED                  TEST_MEMORY_BYTE COLOR_SCREEN+COLOR_SCREEN_SIZE, 0xFF
+ 86+  61ED 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+ 86+  61F0 3A 00 5B    >        ld a,(COLOR_SCREEN+COLOR_SCREEN_SIZE)
+ 86+  61F3 FE FF       >        cp 0xFF
+ 86+  61F5 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+ 86+  61F8 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+ 87+  61FB               TC_END
+ 87+  61FB C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+ 88+  61FE
+ 89+  61FE                  ENDMODULE
+ 90+  61FE
+ 91+  61FE
+ 92+  61FE
+ 93+  61FE                  MODULE TestSuite_Fill
+ 94+  61FE
+ 95+  61FE              ; Tests filling a memory area
+ 96+  61FE              UT_fill_memory:
+ 97+  61FE                  ; Write some bytes
+ 98+  61FE 3E FF            ld a,0xFF
+ 99+  6200 32 63 62         ld (fill_memory_data-1),a
+100+  6203 32 64 62         ld (fill_memory_data),a
+101+  6206 32 69 62         ld (fill_memory_data+FILL_MEMORY_SIZE/2),a
+102+  6209 32 6D 62         ld (fill_memory_data+FILL_MEMORY_SIZE-1),a
+103+  620C 32 6E 62         ld (fill_memory_data+FILL_MEMORY_SIZE),a
+104+  620F
+105+  620F                  ; Now fill the memory area
+106+  620F 3E 16            ld a,22
+107+  6211 21 64 62         ld hl,fill_memory_data
+108+  6214 01 0A 00         ld bc,FILL_MEMORY_SIZE
+109+  6217 CD 26 60         call fill_memory
+110+  621A
+111+  621A                  ; Test that all values inside the screen area are cleared
+112+  621A                  TEST_MEMORY_BYTE fill_memory_data-1, 0xFF
+112+  621A 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+112+  621D 3A 63 62    >        ld a,(fill_memory_data-1)
+112+  6220 FE FF       >        cp 0xFF
+112+  6222 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+112+  6225 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+113+  6228                  TEST_MEMORY_BYTE fill_memory_data, 22
+113+  6228 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+113+  622B 3A 64 62    >        ld a,(fill_memory_data)
+113+  622E FE 16       >        cp 22
+113+  6230 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+113+  6233 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+114+  6236                  TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE/2, 22
+114+  6236 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+114+  6239 3A 69 62    >        ld a,(fill_memory_data+FILL_MEMORY_SIZE/2)
+114+  623C FE 16       >        cp 22
+114+  623E C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+114+  6241 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+115+  6244                  TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE-1, 22
+115+  6244 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+115+  6247 3A 6D 62    >        ld a,(fill_memory_data+FILL_MEMORY_SIZE-1)
+115+  624A FE 16       >        cp 22
+115+  624C C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+115+  624F 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+116+  6252
+117+  6252                  TEST_MEMORY_BYTE fill_memory_data+FILL_MEMORY_SIZE, 0xFF
+117+  6252 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+117+  6255 3A 6E 62    >        ld a,(fill_memory_data+FILL_MEMORY_SIZE)
+117+  6258 FE FF       >        cp 0xFF
+117+  625A C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+117+  625D 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+118+  6260               TC_END
+118+  6260 C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+119+  6263
+120+  6263
+121+  6263              FILL_MEMORY_SIZE:   equ 10
+122+  6263 00               defb 0
+123+  6264              fill_memory_data:
+124+  6264 00 00 00...      defs 10
+125+  626E 00               defb 0
+126+  626F
+127+  626F
+128+  626F              ; Tests filling a line in the background color screen.
+129+  626F              UT_fill_bckg_line_normal:
+130+  626F                  ; Initialize background
+131+  626F CD 69 60         call clear_backg
+132+  6272
+133+  6272                  ; Fill line with color
+134+  6272 3E 18            ld a,MAGENTA
+135+  6274 11 00 58         ld de,COLOR_SCREEN
+136+  6277 CD 2E 60         call fill_bckg_line
+137+  627A
+138+  627A                  ; Test that line is filled
+139+  627A                  TEST_MEMORY_BYTE COLOR_SCREEN, MAGENTA
+139+  627A 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+139+  627D 3A 00 58    >        ld a,(COLOR_SCREEN)
+139+  6280 FE 18       >        cp MAGENTA
+139+  6282 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+139+  6285 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+140+  6288                  TEST_MEMORY_BYTE COLOR_SCREEN+16, MAGENTA
+140+  6288 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+140+  628B 3A 10 58    >        ld a,(COLOR_SCREEN+16)
+140+  628E FE 18       >        cp MAGENTA
+140+  6290 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+140+  6293 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+141+  6296                  TEST_MEMORY_BYTE COLOR_SCREEN+31, MAGENTA
+141+  6296 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+141+  6299 3A 1F 58    >        ld a,(COLOR_SCREEN+31)
+141+  629C FE 18       >        cp MAGENTA
+141+  629E C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+141+  62A1 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+142+  62A4                  TEST_MEMORY_BYTE COLOR_SCREEN+32, 0
+142+  62A4 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+142+  62A7 3A 20 58    >        ld a,(COLOR_SCREEN+32)
+142+  62AA FE 00       >        cp 0
+142+  62AC C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+142+  62AF 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+143+  62B2
+144+  62B2                  ; Test that de points to the next line
+145+  62B2                  TEST_DREG de, COLOR_SCREEN+32
+145+  62B2 D5          >        push de
+145+  62B3 E5          >        push hl
+145+  62B4 D5          >        push de
+145+  62B5 E1          >        pop hl
+145+  62B6 11 20 58    >        ld de,COLOR_SCREEN+32
+145+  62B9 B7          >        or a
+145+  62BA ED 52       >        sbc hl,de
+145+  62BC E1          >        pop hl
+145+  62BD D1          >        pop de
+145+  62BE C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+145+  62C1 00          >        nop
+146+  62C2               TC_END
+146+  62C2 C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+147+  62C5
+148+  62C5              ; Test wrap around.
+149+  62C5              UT_fill_bckg_line_wrap_around:
+150+  62C5                  ; Initialize background
+151+  62C5 CD 69 60         call clear_backg
+152+  62C8
+153+  62C8                  ; Fill line with color
+154+  62C8 3E 18            ld a,MAGENTA
+155+  62CA 11 E0 5A         ld de,COLOR_SCREEN+23*32
+156+  62CD CD 2E 60         call fill_bckg_line
+157+  62D0
+158+  62D0                  ; Test that line is filled
+159+  62D0                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32, MAGENTA
+159+  62D0 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+159+  62D3 3A E0 5A    >        ld a,(COLOR_SCREEN+23*32)
+159+  62D6 FE 18       >        cp MAGENTA
+159+  62D8 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+159+  62DB 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+160+  62DE                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32+16, MAGENTA
+160+  62DE 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+160+  62E1 3A F0 5A    >        ld a,(COLOR_SCREEN+23*32+16)
+160+  62E4 FE 18       >        cp MAGENTA
+160+  62E6 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+160+  62E9 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+161+  62EC                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32+31, MAGENTA
+161+  62EC 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+161+  62EF 3A FF 5A    >        ld a,(COLOR_SCREEN+23*32+31)
+161+  62F2 FE 18       >        cp MAGENTA
+161+  62F4 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+161+  62F7 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+162+  62FA                  TEST_MEMORY_BYTE COLOR_SCREEN+23*32-1, 0
+162+  62FA 32 14 61    >        ld (UNITTEST_SAVE_REG),a
+162+  62FD 3A DF 5A    >        ld a,(COLOR_SCREEN+23*32-1)
+162+  6300 FE 00       >        cp 0
+162+  6302 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE
+162+  6305 3A 14 61    >        ld a,(UNITTEST_SAVE_REG)
+163+  6308
+164+  6308                  ; Test that de points to the first line (wrap around)
+165+  6308                  TEST_DREG de, COLOR_SCREEN
+165+  6308 D5          >        push de
+165+  6309 E5          >        push hl
+165+  630A D5          >        push de
+165+  630B E1          >        pop hl
+165+  630C 11 00 58    >        ld de,COLOR_SCREEN
+165+  630F B7          >        or a
+165+  6310 ED 52       >        sbc hl,de
+165+  6312 E1          >        pop hl
+165+  6313 D1          >        pop de
+165+  6314 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+165+  6317 00          >        nop
+166+  6318               TC_END
+166+  6318 C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+167+  631B
+168+  631B
+169+  631B              ; Test wrap around.
+170+  631B              UT_fill_colors_ptr:
+171+  631B                  ; Start value
+172+  631B 21 58 60         ld hl,fill_colors
+173+  631E 22 56 60         ld (fill_colors_ptr),hl
+174+  6321
+175+  6321                  ; Test increment
+176+  6321 CD 41 60         call inc_fill_colors_ptr
+177+  6324                  ; Test that pointer is moved to next line
+178+  6324                  TEST_MEMORY_WORD fill_colors_ptr, fill_colors+1
+178+  6324 D5          >        push de
+178+  6325 E5          >        push hl
+178+  6326 21 59 60    >        ld hl,fill_colors+1
+178+  6329 ED 5B 56 60 >        ld de,(fill_colors_ptr)
+178+  632D B7          >        or a
+178+  632E ED 52       >        sbc hl,de
+178+  6330 E1          >        pop hl
+178+  6331 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+178+  6334 D1          >        pop de
+179+  6335
+180+  6335                  ; Test increment
+181+  6335 CD 41 60         call inc_fill_colors_ptr
+182+  6338                  ; Test that pointer is moved to next line
+183+  6338                  TEST_MEMORY_WORD fill_colors_ptr, fill_colors+2
+183+  6338 D5          >        push de
+183+  6339 E5          >        push hl
+183+  633A 21 5A 60    >        ld hl,fill_colors+2
+183+  633D ED 5B 56 60 >        ld de,(fill_colors_ptr)
+183+  6341 B7          >        or a
+183+  6342 ED 52       >        sbc hl,de
+183+  6344 E1          >        pop hl
+183+  6345 C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+183+  6348 D1          >        pop de
+184+  6349
+185+  6349                  ; Last value
+186+  6349 21 5C 60         ld hl,fill_colors_end-1
+187+  634C 22 56 60         ld (fill_colors_ptr),hl
+188+  634F
+189+  634F                  ; Test increment
+190+  634F CD 41 60         call inc_fill_colors_ptr
+191+  6352                  ; Test that pointer wraps around and points to first line
+192+  6352                  TEST_MEMORY_WORD fill_colors_ptr, fill_colors
+192+  6352 D5          >        push de
+192+  6353 E5          >        push hl
+192+  6354 21 58 60    >        ld hl,fill_colors
+192+  6357 ED 5B 56 60 >        ld de,(fill_colors_ptr)
+192+  635B B7          >        or a
+192+  635C ED 52       >        sbc hl,de
+192+  635E E1          >        pop hl
+192+  635F C4 A8 60    >        call nz,UNITTEST_TEST_READY_FAILURE ; de = (addr)
+192+  6362 D1          >        pop de
+193+  6363               TC_END
+193+  6363 C3 AA 60    >        jp UNITTEST_TEST_READY_SUCCESS
+194+  6366
+195+  6366                  ENDMODULE
+196+  6366
+197+  6366
 # file closed: unit_tests.asm
- 44   633D
- 45   633D
- 46   633D              ;===========================================================================
- 47   633D              ; main routine - the code execution starts here.
- 48   633D              ; Sets up the new interrupt routine, the memory
- 49   633D              ; banks and jumps to the start loop.
- 50   633D              ;===========================================================================
- 51   633D
- 52   633D               ORG $8000
+ 44   6366
+ 45   6366
+ 46   6366              ;===========================================================================
+ 47   6366              ; main routine - the code execution starts here.
+ 48   6366              ; Sets up the new interrupt routine, the memory
+ 49   6366              ; banks and jumps to the start loop.
+ 50   6366              ;===========================================================================
+ 51   6366
+ 52   6366               ORG $8000
  53   8000
  54   8000              sub:
  55   8000 00               nop
@@ -1547,149 +1641,103 @@
  59   8003              main:
  60   8003                  ; Disable interrupts
  61   8003 F3               di
- 62   8004 FB               ei
- 63   8005 31 56 81         ld sp,stack_top
- 64   8008
- 65   8008               IF 01
- 66   8008
- 67   8008 CD 00 80         call sub
- 68   800B
- 69   800B 11 09 03         ld de, 777
- 70   800E
- 71   800E 3E 01            ld a, 1
- 72   8010              .loop:
- 73   8010 00               nop
- 74   8011 00               nop
- 75   8012 CD 62 60         call dezog_check_for_message
- 76   8015 00               nop
- 77   8016
- 78   8016 3C               inc a
- 79   8017
- 80   8017 00               nop
- 81   8018 3C               inc a
- 82   8019 00               nop
- 83   801A 00               nop
- 84   801B
- 85   801B 00               nop
- 86   801C 00               nop
- 87   801D 00               nop
- 88   801E
- 89   801E 00               nop
- 90   801F 00               nop
- 91   8020 00               nop
- 92   8021 00               nop
- 93   8022 00               nop
- 94   8023
- 95   8023 18 EB            jr .loop
- 96   8025
- 97   8025 1B               dec de
- 98   8026 7A               ld a,d
- 99   8027 B3               or e
-100   8028 20 E6            jr nz,.loop
-101   802A
-102   802A 00               nop
-103   802B 00               nop
-104   802C
-105   802C
-106   802C               ENDIF
-107   802C
-108   802C                  ; CLS
-109   802C CD 48 60         call clear_screen
-110   802F CD 53 60         call clear_backg
-111   8032
-112   8032                  ; Init
-113   8032              lbl1:
-114   8032 21 42 60         ld hl,fill_colors
-115   8035 22 40 60         ld (fill_colors_ptr),hl
-116   8038 11 00 58         ld de,COLOR_SCREEN
-117   803B
-118   803B                  ; Enable interrupts
-119   803B                  ;im 1
-120   803B                  ;ei
-121   803B
-122   803B F3              di
-123   803C              main_loop:
-124   803C                  ; fill line with color
-125   803C 2A 40 60         ld hl,(fill_colors_ptr)
-126   803F 7E               ld a,(hl)
-127   8040 CD 18 60         call fill_bckg_line
-128   8043
-129   8043                  ; break
-130   8043 D5               push de
-131   8044 11 F4 01         ld de,PAUSE_TIME
-132   8047 CD 01 60         call pause
-133   804A D1               pop de
-134   804B
-135   804B                  ; Alternatively wait on vertical interrupt
-136   804B               ;   halt
-137   804B
-138   804B                  ; next line
-139   804B 00               nop
-140   804C CD 2B 60         call inc_fill_colors_ptr
-141   804F
-142   804F
-143   804F 18 EB            jr main_loop
-144   8051
-145   8051
-146   8051
-147   8051              ;===========================================================================
-148   8051              ; Stack.
-149   8051              ;===========================================================================
-150   8051
-151   8051 3A 5B 80      ld a,(rb_continue.bp1_address)
-152   8054
-153   8054
-154   8054                  STRUCT RECEIVE_BUFFER_CMD_CONTINUE
-155   8054 ~            bp1_enable          BYTE    0
-156   8054 ~            bp1_address         WORD    0
-157   8054 ~            bp2_enable          BYTE    0
-158   8054 ~            bp2_address         WORD    0
-159   8054                  ENDS
-160   8054
-161   8054              receive_buffer:
-162   8054 00 00 00...      defs 6
-163   805A              .payload
-164   805A 00 00 00...      defs 50
-165   808C
-166   808C              ; definie alias labels for "receive_buffer" to access specific-command fields
-167   808C              rb_continue    RECEIVE_BUFFER_CMD_CONTINUE = receive_buffer.payload
-168   808C
-169   808C
-170   808C
-171   808C              ; Stack: this area is reserved for the stack
-172   808C              STACK_SIZE: equ 100    ; in words
-173   808C
-174   808C
-175   808C              ; Reserve stack space
-176   808C 00 00            defw 0  ; WPMEM, 2
-177   808E              stack_bottom:
-178   808E 00 00 00...      defs    STACK_SIZE*2, 0
-179   8156              stack_top:
-180   8156                  ;defw 0
-181   8156 00 00            defw 0  ; WPMEM, 2
-182   8158
-183   8158
-184   8158
-185   8158                  IF NEX == 0
-186   8158 ~                    SAVESNA "z80-sample-program.sna", main
-187   8158                  ELSE
-188   8158                      SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-189   8158                      SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
-190   8158                      SAVENEX CFG 7   ; Border color
-191   8158                      SAVENEX AUTO
-192   8158                      SAVENEX CLOSE
-193   8158                  ENDIF
-194   8158
+ 62   8004 31 2B 81         ld sp,stack_top
+ 63   8007
+ 64   8007                  ; CLS
+ 65   8007 CD 5E 60         call clear_screen
+ 66   800A CD 69 60         call clear_backg
+ 67   800D
+ 68   800D                  ; Init
+ 69   800D              lbl1:
+ 70   800D 21 58 60         ld hl,fill_colors
+ 71   8010 22 56 60         ld (fill_colors_ptr),hl
+ 72   8013 11 00 58         ld de,COLOR_SCREEN
+ 73   8016
+ 74   8016                  ; Enable interrupts
+ 75   8016 ED 56            im 1
+ 76   8018 FB               ei
+ 77   8019
+ 78   8019              main_loop:
+ 79   8019                  ; fill line with color
+ 80   8019 2A 56 60         ld hl,(fill_colors_ptr)
+ 81   801C 7E               ld a,(hl)
+ 82   801D CD 2E 60         call fill_bckg_line
+ 83   8020
+ 84   8020                  ; break
+ 85   8020                  ;push de
+ 86   8020                  ;ld de,PAUSE_TIME
+ 87   8020                  ;call pause
+ 88   8020                  ;pop de
+ 89   8020
+ 90   8020                  ; Alternatively wait on vertical interrupt
+ 91   8020 76               halt
+ 92   8021
+ 93   8021                  ; next line
+ 94   8021 CD 41 60         call inc_fill_colors_ptr
+ 95   8024
+ 96   8024 18 F3            jr main_loop
+ 97   8026
+ 98   8026
+ 99   8026              ;===========================================================================
+100   8026              ; Stack.
+101   8026              ;===========================================================================
+102   8026
+103   8026 3A 30 80      ld a,(rb_continue.bp1_address)
+104   8029
+105   8029
+106   8029                  STRUCT RECEIVE_BUFFER_CMD_CONTINUE
+107   8029 ~            bp1_enable          BYTE    0
+108   8029 ~            bp1_address         WORD    0
+109   8029 ~            bp2_enable          BYTE    0
+110   8029 ~            bp2_address         WORD    0
+111   8029                  ENDS
+112   8029
+113   8029              receive_buffer:
+114   8029 00 00 00...      defs 6
+115   802F              .payload
+116   802F 00 00 00...      defs 50
+117   8061
+118   8061              ; definie alias labels for "receive_buffer" to access specific-command fields
+119   8061              rb_continue    RECEIVE_BUFFER_CMD_CONTINUE = receive_buffer.payload
+120   8061
+121   8061
+122   8061
+123   8061              ; Stack: this area is reserved for the stack
+124   8061              STACK_SIZE: equ 100    ; in words
+125   8061
+126   8061
+127   8061              ; Reserve stack space
+128   8061 00 00            defw 0  ; WPMEM, 2
+129   8063              stack_bottom:
+130   8063 00 00 00...      defs    STACK_SIZE*2, 0
+131   812B              stack_top:
+132   812B                  ;defw 0
+133   812B 00 00            defw 0  ; WPMEM, 2
+134   812D
+135   812D
+136   812D
+137   812D                  IF NEX == 0
+138   812D ~                    SAVESNA "z80-sample-program.sna", main
+139   812D                  ELSE
+140   812D                      SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+141   812D                      SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+142   812D                      SAVENEX CFG 7   ; Border color
+143   812D                      SAVENEX AUTO
+144   812D                      SAVENEX CLOSE
+145   812D                  ENDIF
+146   812D
 # file closed: main.asm
 
 Value    Label
 ------ - -----------------------------------------------------------
 0x0001   NEX
 0x6000 X screen_top
-0x01F4   PAUSE_TIME
-0x6001   pause
-0x6004   pause_loop_l2
-0x6006   pause_loop_l1
+0x01F4 X PAUSE_TIME
+0x6001 X pause
+0x600B   pause.cantStartAt192
+0x6011   pause.waitLoop
+0x601A   pause_loop_l2
+0x601C   pause_loop_l1
 0x0020   BCKG_LINE_SIZE
 0x0000 X BLACK
 0x0008   BLUE
@@ -1699,60 +1747,65 @@ Value    Label
 0x0028 X CYAN
 0x0030   YELLOW
 0x0038 X WHITE
-0x6010   fill_memory
-0x6018   fill_bckg_line
+0x6026   fill_memory
+0x602E   fill_bckg_line
 0x5800   COLOR_SCREEN
 0x0300   COLOR_SCREEN_SIZE
-0x602B   inc_fill_colors_ptr
-0x6040   fill_colors_ptr
-0x6047   fill_colors_end
-0x6042   fill_colors
+0x6041   inc_fill_colors_ptr
+0x6056   fill_colors_ptr
+0x605D   fill_colors_end
+0x6058   fill_colors
 0x4000   SCREEN
 0x1800   SCREEN_SIZE
-0x6048   clear_screen
-0x6053   clear_backg
-0x6058   fill_backg
-0x133B   PORT_UART_TX
-0x0000   UART_RX_FIFO_EMPTY
-0x6062   dezog_check_for_message
-0x606D   _dezog_start_cmd_loop
-0x6075 X UNITTEST_TEST_WRAPPER
-0x60E9   UNITTEST_STACK
-0x6079 X UNITTEST_CALL_ADDR
-0x607D   UNITTEST_TEST_READY_RETURN_FAILURE
-0x607F   UNITTEST_TEST_READY_FAILURE
-0x6080 X UNITTEST_TEST_READY_FAILURE_BREAKPOINT
-0x6081   UNITTEST_TEST_READY_SUCCESS
-0x6083 X UNITTEST_MIN_STACK_GUARD
-0x60E9 X UNITTEST_MAX_STACK_GUARD
-0x60EB   UNITTEST_SAVE_REG
-0x60ED X UNITTEST_START
-0x60EF X TestSuite_ClearScreen.UT_clear_screen
-0x613B X TestSuite_ClearScreen.UT_fill_backg
-0x6189 X TestSuite_ClearScreen.UT_clear_backg
-0x61D5 X TestSuite_Fill.UT_fill_memory
-0x623B   TestSuite_Fill.fill_memory_data
+0x605E   clear_screen
+0x6069   clear_backg
+0x606E   fill_backg
+0x0000   dezog_magic_number_a
+0x0001   dezog_magic_number_b
+0x0066   dezog_magic_number_c
+0x0067   dezog_magic_number_d
+0x0018   DEZOG_MAGIC_NUMBER_VALUE_A
+0x0064   DEZOG_MAGIC_NUMBER_VALUE_B
+0x00F5   DEZOG_MAGIC_NUMBER_VALUE_C
+0x00ED   DEZOG_MAGIC_NUMBER_VALUE_D
+0x6078 X dezog_init_slot0_bank
+0x6093   dezog_init_slot0_bank.push
+0x609E X UNITTEST_TEST_WRAPPER
+0x6112   UNITTEST_STACK
+0x60A2 X UNITTEST_CALL_ADDR
+0x60A6   UNITTEST_TEST_READY_RETURN_FAILURE
+0x60A8   UNITTEST_TEST_READY_FAILURE
+0x60A9 X UNITTEST_TEST_READY_FAILURE_BREAKPOINT
+0x60AA   UNITTEST_TEST_READY_SUCCESS
+0x60AC X UNITTEST_MIN_STACK_GUARD
+0x6112 X UNITTEST_MAX_STACK_GUARD
+0x6114   UNITTEST_SAVE_REG
+0x6116 X UNITTEST_START
+0x6118 X TestSuite_ClearScreen.UT_clear_screen
+0x6164 X TestSuite_ClearScreen.UT_fill_backg
+0x61B2 X TestSuite_ClearScreen.UT_clear_backg
+0x61FE X TestSuite_Fill.UT_fill_memory
+0x6264   TestSuite_Fill.fill_memory_data
 0x000A   TestSuite_Fill.FILL_MEMORY_SIZE
-0x6246 X TestSuite_Fill.UT_fill_bckg_line_normal
-0x629C X TestSuite_Fill.UT_fill_bckg_line_wrap_around
-0x62F2 X TestSuite_Fill.UT_fill_colors_ptr
-0x8000   sub
+0x626F X TestSuite_Fill.UT_fill_bckg_line_normal
+0x62C5 X TestSuite_Fill.UT_fill_bckg_line_wrap_around
+0x631B X TestSuite_Fill.UT_fill_colors_ptr
+0x8000 X sub
 0x8003 X main
-0x8156   stack_top
-0x8010   main.loop
-0x8032 X lbl1
-0x803C   main_loop
-0x805B   rb_continue.bp1_address
+0x812B   stack_top
+0x800D X lbl1
+0x8019   main_loop
+0x8030   rb_continue.bp1_address
 0x0006 X RECEIVE_BUFFER_CMD_CONTINUE
 0x0000 X RECEIVE_BUFFER_CMD_CONTINUE.bp1_enable
 0x0001 X RECEIVE_BUFFER_CMD_CONTINUE.bp1_address
 0x0003 X RECEIVE_BUFFER_CMD_CONTINUE.bp2_enable
 0x0004 X RECEIVE_BUFFER_CMD_CONTINUE.bp2_address
-0x8054 X receive_buffer
-0x805A   receive_buffer.payload
-0x805A X rb_continue
-0x805A X rb_continue.bp1_enable
-0x805D X rb_continue.bp2_enable
-0x805E X rb_continue.bp2_address
+0x8029 X receive_buffer
+0x802F   receive_buffer.payload
+0x802F X rb_continue
+0x802F X rb_continue.bp1_enable
+0x8032 X rb_continue.bp2_enable
+0x8033 X rb_continue.bp2_address
 0x0064   STACK_SIZE
-0x808E X stack_bottom
+0x8063 X stack_bottom
