@@ -58,7 +58,6 @@
             "cspect": {
                 "hostname": "localhost",
                 "port": 11000,
-                //"socketTimeout": 50
             },
             "listFiles": [
                 {
@@ -138,7 +137,6 @@
             "remoteType": "zxnext",
             "zxnext": {
                 //"port": 13000,
-                "socketTimeout": 50
             },
             "listFiles": [
                 {
