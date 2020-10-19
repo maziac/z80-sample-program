@@ -6,7 +6,7 @@
 ; Some constants
 BCKG_LINE_SIZE:  equ     32
 
-; Colors 
+; Colors
 BLACK:          equ 0<<3
 BLUE:           equ 1<<3
 RED:            equ 2<<3
@@ -28,10 +28,10 @@ fill_memory:
     inc de
     dec bc
     ldir
-    ret	
+    ret
 
 
-; Fills a background line with a color. 
+; Fills a background line with a color.
 ; IN:
 ; a = color
 ; de = points to background screen
@@ -42,13 +42,13 @@ fill_bckg_line:
     ld l,e
     ld h,d
     call fill_memory
-    ; check that destination address is still in screen background 
+    ; check that destination address is still in screen background
     ld hl,COLOR_SCREEN+COLOR_SCREEN_SIZE-1
     or a    ; clear carry
-    sbc hl,de ; compare 
+    sbc hl,de ; compare
     ret p
     ; ld start address
-    ld de,COLOR_SCREEN 
+    ld de,COLOR_SCREEN
     ret
 
 
@@ -56,14 +56,14 @@ fill_bckg_line:
 inc_fill_colors_ptr:
     ld hl,(fill_colors_ptr)
     inc hl
-    ld (fill_colors_ptr),hl 
-    
+    ld (fill_colors_ptr),hl
+
     ; check if out of range
     ld bc,fill_colors_end
     or a    ; clear carry
-    sbc hl,bc ; compare 
+    sbc hl,bc ; compare
     ret m
-    
+
     ; reset
     ld hl,fill_colors
     ld (fill_colors_ptr),hl
@@ -76,7 +76,6 @@ fill_colors_ptr:    defw 0
 ; Contains the colors for the lines. Each entry represnts the color for one line.
 fill_colors:
     defb RED, YELLOW, BLUE, GREEN, MAGENTA
-fill_colors_end:    
+fill_colors_end:
     defb 0  ; WPMEM
-    
 
