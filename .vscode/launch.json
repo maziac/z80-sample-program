@@ -11,21 +11,11 @@
             "remoteType": "zsim",
             "zsim": {
                 "visualMemory": "ZX48"
-                //"Z80N": true,
             },
-            "listFiles": [
+            "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list",
-                    "asm": "sjasmplus",
-                    "mainFile": "main.asm"
-                },
-                /*
-                {
-                    "path": "....../rom48.list",
-                    "asm": "z80asm",
-                    "srcDirs": []
+                    "path": "z80-sample-program.list"
                 }
-                */
             ],
             "history": {
                 "reverseDebugInstructionCount": 1000000,
@@ -59,16 +49,14 @@
                 "hostname": "localhost",
                 "port": 11000,
             },
-            "listFiles": [
+            "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list",
-                    "asm": "sjasmplus",
-                    "mainFile": "main.asm"
+                    "path": "z80-sample-program.list"
                 }
             ],
             "history": {
                 "reverseDebugInstructionCount": 1000000,
-                "spotCount": 10  
+                "spotCount": 10
             },
             "startAutomatically": false,
             "skipInterrupt": true,
@@ -99,11 +87,9 @@
                 "port": 10000,
                 //"socketTimeout": 50
             },
-            "listFiles": [
+            "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list",
-                    "asm": "sjasmplus",
-                    "mainFile": "main.asm"
+                    "path": "z80-sample-program.list"
                 }
             ],
             "history": {
@@ -138,11 +124,9 @@
             "zxnext": {
                 //"port": 13000,
             },
-            "listFiles": [
+            "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list",
-                    "asm": "sjasmplus",
-                    "mainFile": "main.asm"
+                    "path": "z80-sample-program.list"
                 }
             ],
             "history": {
@@ -184,11 +168,9 @@
             "disassemblerArgs": {
                 "esxdosRst": true
             },
-            "listFiles": [
+            "sjasmplus": [
                 {
                     "path": "z80-sample-program.list",
-                    "asm": "sjasmplus",
-                    "mainFile": "main.asm"
                 }
             ],
             "rootFolder": "${workspaceFolder}",
