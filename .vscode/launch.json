@@ -9,12 +9,17 @@
             "request": "launch",
             "name": "Internal Simulator",
             "remoteType": "zsim",
+            //"remoteType": "zrcp",
+            //"remoteType": "cspect",
             "zsim": {
-                "visualMemory": "ZX48"
+                "visualMemory": "ZXNEXT",
+                "memoryModel": "ZXNEXT",
+                "ulaScreen": true,
             },
             "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list"
+                    //"path": "z80-sample-program.list"
+                    "path": "z80-sample-program.sld"
                 }
             ],
             "history": {
@@ -23,10 +28,9 @@
                 "codeCoverageEnabled": true
             },
             "startAutomatically": false,
-            "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-logpoint enable",
-                "-assert enable",
+                "-assertion enable",
                 "-wpmem enable"
             ],
             "disassemblerArgs": {
@@ -51,7 +55,8 @@
             },
             "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list"
+                    //"path": "z80-sample-program.list"
+                    "path": "z80-sample-program.sld"
                 }
             ],
             "history": {
@@ -59,10 +64,9 @@
                 "spotCount": 10
             },
             "startAutomatically": false,
-            "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-logpoint enable",
-                "-assert enable",
+                "-assertion enable",
                 //"-sprites",
                 //"-patterns",
             ],
@@ -89,18 +93,18 @@
             },
             "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list"
-                }
+                    //"path": "z80-sample-program.list"
+                    "path": "z80-sample-program.sld"
+}
             ],
             "history": {
                 "reverseDebugInstructionCount": 1000000,
                 "spotCount": 10,
             },
             "startAutomatically": false,
-            "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-logpoint enable",
-                "-assert enable",
+                "-assertion enable",
                 "-wpmem enable",
                 //"-sprites",
                 //"-patterns",
@@ -126,7 +130,8 @@
             },
             "sjasmplus": [
                 {
-                    "path": "z80-sample-program.list"
+                    //"path": "z80-sample-program.list"
+                    "path": "z80-sample-program.sld"
                 }
             ],
             "history": {
@@ -134,10 +139,9 @@
                 "spotCount": 10
             },
             "startAutomatically": false,
-            "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-logpoint enable",
-                "-assert enable",
+                "-assertion enable",
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
@@ -159,10 +163,9 @@
             //"remoteType": "cspect",
             //"remoteType": "zrcp",
             "resetOnLaunch": true,
-            "skipInterrupt": true,
             "commandsAfterLaunch": [
                 "-wpmem enable",
-                "-assert enable",
+                "-assertion enable",
                 "-logpoint enable", // Enable all logpoints, especially [UNITTEST]
             ],
             "disassemblerArgs": {
@@ -170,6 +173,7 @@
             },
             "sjasmplus": [
                 {
+                    //"path": "z80-sample-program.sld",
                     "path": "z80-sample-program.list",
                 }
             ],

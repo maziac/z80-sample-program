@@ -6,6 +6,7 @@
             "type": "shell",
             "command": "sjasmplus",
             "args": [
+                "--sld=z80-sample-program.sld",
                 "--lst=z80-sample-program.list",
                 "--lstlab",
                 "--sym=z80-sample-program.labels",

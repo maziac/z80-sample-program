@@ -3,36 +3,38 @@
   2   0000              ; main.asm
   3   0000              ;===========================================================================
   4   0000
-  5   0000              NEX:    equ 1   ;  1=Create nex file, 0=create sna file
+  5   0000                  SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION
   6   0000
-  7   0000                  IF NEX == 0
-  8   0000 ~                    DEVICE ZXSPECTRUM128
-  9   0000 ~                    ;DEVICE ZXSPECTRUM48
- 10   0000                  ELSE
- 11   0000                      DEVICE ZXSPECTRUMNEXT
- 12   0000                  ENDIF
- 13   0000
- 14   0000                  ORG 0x4000
- 15   4000 00 00 00...      defs 0x6000 - $    ; move after screen area
- 16   6000 00           screen_top: defb    0   ; WPMEMx
- 17   6001
- 18   6001
- 19   6001              ;===========================================================================
- 20   6001              ; Persistent watchpoint.
- 21   6001              ; Change WPMEMx (remove the 'x' from WPMEMx) below to activate.
- 22   6001              ; If you do so the program will hit a breakpoint when it tries to
- 23   6001              ; write to the first byte of the 3rd line.
- 24   6001              ; When program breaks in the fill_memory sub routine please hover over hl
- 25   6001              ; to see that it contains 0x5804 or COLOR_SCREEN+64.
- 26   6001              ;===========================================================================
- 27   6001
- 28   6001              ; WPMEMx 0x5840, 1, w
+  7   0000              NEX:    equ 01   ;  1=Create nex file, 0=create sna file
+  8   0000
+  9   0000                  IF NEX == 0
+ 10   0000 ~                    DEVICE ZXSPECTRUM128
+ 11   0000 ~                    ;DEVICE ZXSPECTRUM48
+ 12   0000                  ELSE
+ 13   0000                      DEVICE ZXSPECTRUMNEXT
+ 14   0000                  ENDIF
+ 15   0000
+ 16   0000                  ORG 0x4000
+ 17   4000 00 00 00...      defs 0x6000 - $    ; move after screen area
+ 18   6000 00           screen_top: defb    0   ; WPMEMx
+ 19   6001
+ 20   6001
+ 21   6001              ;===========================================================================
+ 22   6001              ; Persistent watchpoint.
+ 23   6001              ; Change WPMEMx (remove the 'x' from WPMEMx) below to activate.
+ 24   6001              ; If you do so the program will hit a breakpoint when it tries to
+ 25   6001              ; write to the first byte of the 3rd line.
+ 26   6001              ; When program breaks in the fill_memory sub routine please hover over hl
+ 27   6001              ; to see that it contains 0x5804 or COLOR_SCREEN+64.
+ 28   6001              ;===========================================================================
  29   6001
- 30   6001
- 31   6001              ;===========================================================================
- 32   6001              ; Include modules
+ 30   6001              ; WPMEMx 0x5840, 1, w
+ 31   6001
+ 32   6001
  33   6001              ;===========================================================================
- 34   6001                  include "utilities.asm"
+ 34   6001              ; Include modules
+ 35   6001              ;===========================================================================
+ 36   6001                  include "utilities.asm"
 # file opened: utilities.asm
   1+  6001              ;===========================================================================
   2+  6001              ; utilities.asm
@@ -42,57 +44,58 @@
   6+  6001              ; Some constants
   7+  6001              PAUSE_TIME:     equ 500   ; 0.5 sec
   8+  6001
-  9+  6001              ; Pauses for a while.
- 10+  6001              ; de: wait time, ca. de*0.1ms
- 11+  6001              pause:
- 12+  6001              ;	ret	; comment this line if you would like to see a pause between drawing of the lines.
- 13+  6001
- 14+  6001 F5           	push af
- 15+  6002 C5           	push bc
- 16+  6003
- 17+  6003              pause_loop_l2:
- 18+  6003 06 1A        	ld b,26
- 19+  6005              pause_loop_l1:
- 20+  6005 10 FE        	djnz pause_loop_l1 ; 1 cycle should be roughly 100us=0.1ms
- 21+  6007
- 22+  6007 1B           	dec de
- 23+  6008 7A           	ld a,d
- 24+  6009 B3           	or e
- 25+  600A 20 F7        	jr nz,pause_loop_l2
- 26+  600C
- 27+  600C C1           	pop bc
- 28+  600D F1           	pop af
- 29+  600E C9           	ret
- 30+  600F
+  9+  6001
+ 10+  6001              ; Pauses for a while.
+ 11+  6001              ; de: wait time, ca. de*0.1ms
+ 12+  6001              pause:
+ 13+  6001              ;	ret	; comment this line if you would like to see a pause between drawing of the lines.
+ 14+  6001
+ 15+  6001 F5           	push af
+ 16+  6002 C5           	push bc
+ 17+  6003
+ 18+  6003              pause_loop_l2:
+ 19+  6003 06 1A        	ld b,26
+ 20+  6005              pause_loop_l1:
+ 21+  6005 10 FE        	djnz pause_loop_l1 ; 1 cycle should be roughly 100us=0.1ms
+ 22+  6007
+ 23+  6007 1B           	dec de
+ 24+  6008 7A           	ld a,d
+ 25+  6009 B3           	or e
+ 26+  600A 20 F7        	jr nz,pause_loop_l2
+ 27+  600C
+ 28+  600C C1           	pop bc
+ 29+  600D F1           	pop af
+ 30+  600E C9           	ret
  31+  600F
  32+  600F
  33+  600F
- 34+  600F              ;===========================================================================
- 35+  600F              ; Writes a color to the border and waits on keypress
- 36+  600F              ; of SPACE.
- 37+  600F              ; Used for visual debugging.
- 38+  600F              ; Changes:
- 39+  600F              ;   A
- 40+  600F              ;===========================================================================
- 41+  600F              	MACRO WAIT_SPACE color?
- 42+  600F ~            	ld a,color?
- 43+  600F ~            	out (BORDER),a
- 44+  600F ~            	; Wait on key press
- 45+  600F ~            .not_pressed:
- 46+  600F ~            	ld a,HIGH PORT_KEYB_BNMSHIFTSPACE
- 47+  600F ~            	in a,(LOW PORT_KEYB_BNMSHIFTSPACE)
- 48+  600F ~            	bit 0,a	; SPACE
- 49+  600F ~            	jr nz,.not_pressed
- 50+  600F ~            	; Wait on key release
- 51+  600F ~            .pressed:
- 52+  600F ~            	ld a,HIGH PORT_KEYB_BNMSHIFTSPACE
- 53+  600F ~            	in a,(LOW PORT_KEYB_BNMSHIFTSPACE)
- 54+  600F ~            	bit 0,a	; SPACE
- 55+  600F ~            	jr z,.pressed
- 56+  600F              	ENDM
- 57+  600F
+ 34+  600F
+ 35+  600F              ;===========================================================================
+ 36+  600F              ; Writes a color to the border and waits on keypress
+ 37+  600F              ; of SPACE.
+ 38+  600F              ; Used for visual debugging.
+ 39+  600F              ; Changes:
+ 40+  600F              ;   A
+ 41+  600F              ;===========================================================================
+ 42+  600F              	MACRO WAIT_SPACE color?
+ 43+  600F ~            	ld a,color?
+ 44+  600F ~            	out (BORDER),a
+ 45+  600F ~            	; Wait on key press
+ 46+  600F ~            .not_pressed:
+ 47+  600F ~            	ld a,HIGH PORT_KEYB_BNMSHIFTSPACE
+ 48+  600F ~            	in a,(LOW PORT_KEYB_BNMSHIFTSPACE)
+ 49+  600F ~            	bit 0,a	; SPACE
+ 50+  600F ~            	jr nz,.not_pressed
+ 51+  600F ~            	; Wait on key release
+ 52+  600F ~            .pressed:
+ 53+  600F ~            	ld a,HIGH PORT_KEYB_BNMSHIFTSPACE
+ 54+  600F ~            	in a,(LOW PORT_KEYB_BNMSHIFTSPACE)
+ 55+  600F ~            	bit 0,a	; SPACE
+ 56+  600F ~            	jr z,.pressed
+ 57+  600F              	ENDM
+ 58+  600F
 # file closed: utilities.asm
- 35   600F                  include "fill.asm"
+ 37   600F                  include "fill.asm"
 # file opened: fill.asm
   1+  600F              ;===========================================================================
   2+  600F              ; fill.asm
@@ -177,7 +180,7 @@
  80+  6046 00               defb 0  ; WPMEM
  81+  6047
 # file closed: fill.asm
- 36   6047                  include "clearscreen.asm"
+ 38   6047                  include "clearscreen.asm"
 # file opened: clearscreen.asm
   1+  6047              ;===========================================================================
   2+  6047              ; clearscreen.asm
@@ -220,8 +223,8 @@
  39+  6061
  40+  6061
 # file closed: clearscreen.asm
- 37   6061
- 38   6061                  include "dezog.asm"
+ 39   6061
+ 40   6061                  include "dezog.asm"
 # file opened: dezog.asm
   1+  6061              ;===========================================================================
   2+  6061              ; dezog.asm
@@ -283,12 +286,12 @@
  58+  6084 C3 00 00     	jp 0x0000
  59+  6087
 # file closed: dezog.asm
- 39   6087
- 40   6087                  ; Normally you would assemble the unit tests in a separate target
- 41   6087                  ; in the makefile.
- 42   6087                  ; As this is a very short program and for simplicity the
- 43   6087                  ; unit tests and the main program are assembled in the same binary.
- 44   6087                  include "unit_tests.asm"
+ 41   6087
+ 42   6087                  ; Normally you would assemble the unit tests in a separate target
+ 43   6087                  ; in the makefile.
+ 44   6087                  ; As this is a very short program and for simplicity the
+ 45   6087                  ; unit tests and the main program are assembled in the same binary.
+ 46   6087                  include "unit_tests.asm"
 # file opened: unit_tests.asm
   1+  6087              ;========================================================
   2+  6087              ; unit_tests.asm
@@ -1599,87 +1602,87 @@
 196+  634F
 197+  634F
 # file closed: unit_tests.asm
- 45   634F
- 46   634F
- 47   634F              ;===========================================================================
- 48   634F              ; main routine - the code execution starts here.
- 49   634F              ; Sets up the new interrupt routine, the memory
- 50   634F              ; banks and jumps to the start loop.
- 51   634F              ;===========================================================================
- 52   634F
- 53   634F
- 54   634F 00 00 00...   defs 0x8000 - $
- 55   8000               ORG $8000
- 56   8000
- 57   8000              main:
- 58   8000                  ; Disable interrupts
- 59   8000 F3               di
- 60   8001 31 F1 80         ld sp,stack_top
- 61   8004
- 62   8004                  ; CLS
- 63   8004 CD 47 60         call clear_screen
- 64   8007 CD 52 60         call clear_backg
- 65   800A
- 66   800A                  ; Init
- 67   800A              lbl1:
- 68   800A 21 41 60         ld hl,fill_colors
- 69   800D 22 3F 60         ld (fill_colors_ptr),hl
- 70   8010 11 00 58         ld de,COLOR_SCREEN
- 71   8013
- 72   8013                  ; Enable interrupts
- 73   8013                  ;im 1
- 74   8013                  ;ei
- 75   8013
- 76   8013              main_loop:
- 77   8013                  ; fill line with color
- 78   8013 2A 3F 60         ld hl,(fill_colors_ptr)
- 79   8016 7E               ld a,(hl)
- 80   8017 CD 17 60         call fill_bckg_line
- 81   801A
- 82   801A                  ; break
- 83   801A D5               push de
- 84   801B 11 F4 01         ld de,PAUSE_TIME
- 85   801E CD 01 60         call pause
- 86   8021 D1               pop de
- 87   8022
- 88   8022                  ; Alternatively wait on vertical interrupt
- 89   8022                  ;halt
- 90   8022
- 91   8022                  ; next line
- 92   8022 CD 2A 60         call inc_fill_colors_ptr
- 93   8025
- 94   8025 18 EC            jr main_loop
- 95   8027
- 96   8027
- 97   8027              ;===========================================================================
- 98   8027              ; Stack.
+ 47   634F
+ 48   634F
+ 49   634F              ;===========================================================================
+ 50   634F              ; main routine - the code execution starts here.
+ 51   634F              ; Sets up the new interrupt routine, the memory
+ 52   634F              ; banks and jumps to the start loop.
+ 53   634F              ;===========================================================================
+ 54   634F
+ 55   634F
+ 56   634F 00 00 00...   defs 0x8000 - $
+ 57   8000               ORG $8000
+ 58   8000
+ 59   8000              main:
+ 60   8000                  ; Disable interrupts
+ 61   8000 F3               di
+ 62   8001 31 F1 80         ld sp,stack_top
+ 63   8004
+ 64   8004                  ; CLS
+ 65   8004 CD 47 60         call clear_screen
+ 66   8007 CD 52 60         call clear_backg
+ 67   800A
+ 68   800A                  ; Init
+ 69   800A              lbl1:
+ 70   800A 21 41 60         ld hl,fill_colors
+ 71   800D 22 3F 60         ld (fill_colors_ptr),hl
+ 72   8010 11 00 58         ld de,COLOR_SCREEN
+ 73   8013
+ 74   8013                  ; Enable interrupts
+ 75   8013                  ;im 1
+ 76   8013                  ;ei
+ 77   8013
+ 78   8013              main_loop:
+ 79   8013                  ; fill line with color
+ 80   8013 2A 3F 60         ld hl,(fill_colors_ptr)
+ 81   8016 7E               ld a,(hl)
+ 82   8017 CD 17 60         call fill_bckg_line
+ 83   801A
+ 84   801A                  ; break
+ 85   801A D5               push de
+ 86   801B 11 F4 01         ld de,PAUSE_TIME
+ 87   801E CD 01 60         call pause
+ 88   8021 D1               pop de
+ 89   8022
+ 90   8022                  ; Alternatively wait on vertical interrupt
+ 91   8022                  ;halt
+ 92   8022
+ 93   8022                  ; next line
+ 94   8022 CD 2A 60         call inc_fill_colors_ptr
+ 95   8025
+ 96   8025 18 EC            jr main_loop
+ 97   8027
+ 98   8027
  99   8027              ;===========================================================================
-100   8027
-101   8027
-102   8027              ; Stack: this area is reserved for the stack
-103   8027              STACK_SIZE: equ 100    ; in words
-104   8027
-105   8027
-106   8027              ; Reserve stack space
-107   8027 00 00            defw 0  ; WPMEM, 2
-108   8029              stack_bottom:
-109   8029 00 00 00...      defs    STACK_SIZE*2, 0
-110   80F1              stack_top:
-111   80F1                  ;defw 0
-112   80F1 00 00            defw 0  ; WPMEM, 2
-113   80F3
-114   80F3
+100   8027              ; Stack.
+101   8027              ;===========================================================================
+102   8027
+103   8027
+104   8027              ; Stack: this area is reserved for the stack
+105   8027              STACK_SIZE: equ 100    ; in words
+106   8027
+107   8027
+108   8027              ; Reserve stack space
+109   8027 00 00            defw 0  ; WPMEM, 2
+110   8029              stack_bottom:
+111   8029 00 00 00...      defs    STACK_SIZE*2, 0
+112   80F1              stack_top:
+113   80F1                  ;defw 0
+114   80F1 00 00            defw 0  ; WPMEM, 2
 115   80F3
-116   80F3                  IF NEX == 0
-117   80F3 ~                    SAVESNA "z80-sample-program.sna", main
-118   80F3                  ELSE
-119   80F3                      SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-120   80F3                      SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
-121   80F3                      SAVENEX CFG 7   ; Border color
-122   80F3                      SAVENEX AUTO
-123   80F3                      SAVENEX CLOSE
-124   80F3                  ENDIF
-125   80F3
+116   80F3
+117   80F3
+118   80F3                  IF NEX == 0
+119   80F3 ~                    SAVESNA "z80-sample-program.sna", main
+120   80F3                  ELSE
+121   80F3                      SAVENEX OPEN "z80-sample-program.nex", main, stack_top
+122   80F3                      SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+123   80F3                      SAVENEX CFG 7   ; Border color
+124   80F3                      SAVENEX AUTO
+125   80F3                      SAVENEX CLOSE
+126   80F3                  ENDIF
+127   80F3
 # file closed: main.asm
 
 Value    Label
