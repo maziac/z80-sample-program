@@ -4,7 +4,7 @@
 
     SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION
 
-NEX:    equ 01   ;  1=Create nex file, 0=create sna file
+NEX:    equ 1   ;  1=Create nex file, 0=create sna file
 
     IF NEX == 0
         DEVICE ZXSPECTRUM128
