@@ -1,7 +1,4 @@
 {
-    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
-    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
-    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -15,10 +12,10 @@
                 "visualMemory": "ZXNEXT",
                 "memoryModel": "ZXNEXT",
                 "ulaScreen": true,
+                "vsyncInterrupt": true
             },
             "sjasmplus": [
                 {
-                    //"path": "z80-sample-program.list"
                     "path": "z80-sample-program.sld"
                 }
             ],
@@ -55,7 +52,6 @@
             },
             "sjasmplus": [
                 {
-                    //"path": "z80-sample-program.list"
                     "path": "z80-sample-program.sld"
                 }
             ],
@@ -93,7 +89,6 @@
             },
             "sjasmplus": [
                 {
-                    //"path": "z80-sample-program.list"
                     "path": "z80-sample-program.sld"
 }
             ],
@@ -130,7 +125,6 @@
             },
             "sjasmplus": [
                 {
-                    //"path": "z80-sample-program.list"
                     "path": "z80-sample-program.sld"
                 }
             ],
@@ -162,19 +156,12 @@
             "remoteType": "zsim",
             //"remoteType": "cspect",
             //"remoteType": "zrcp",
-            "resetOnLaunch": true,
-            "commandsAfterLaunch": [
-                "-wpmem enable",
-                "-assertion enable",
-                "-logpoint enable", // Enable all logpoints, especially [UNITTEST]
-            ],
             "disassemblerArgs": {
                 "esxdosRst": true
             },
             "sjasmplus": [
                 {
-                    //"path": "z80-sample-program.sld",
-                    "path": "z80-sample-program.list",
+                    "path": "z80-sample-program.sld",
                 }
             ],
             "rootFolder": "${workspaceFolder}",
