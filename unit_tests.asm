@@ -142,7 +142,7 @@ UT_fill_bckg_line_normal:
     TEST_MEMORY_BYTE COLOR_SCREEN+32, 0
 
     ; Test that de points to the next line
-    TEST_DREG de, COLOR_SCREEN+32
+    nop ; ASSERTION DE == COLOR_SCREEN+32
  TC_END
 
 ; Test wrap around.
@@ -162,7 +162,7 @@ UT_fill_bckg_line_wrap_around:
     TEST_MEMORY_BYTE COLOR_SCREEN+23*32-1, 0
 
     ; Test that de points to the first line (wrap around)
-    TEST_DREG de, COLOR_SCREEN
+    nop ; ASSERTION DE == COLOR_SCREEN
  TC_END
 
 
