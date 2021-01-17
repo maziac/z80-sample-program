@@ -90,7 +90,7 @@
             "sjasmplus": [
                 {
                     "path": "z80-sample-program.sld"
-}
+                }
             ],
             "history": {
                 "reverseDebugInstructionCount": 1000000,
@@ -154,8 +154,6 @@
             "name": "Unit Tests",
             "unitTests": true,
             "remoteType": "zsim",
-            //"remoteType": "cspect",
-            //"remoteType": "zrcp",
             "disassemblerArgs": {
                 "esxdosRst": true
             },
