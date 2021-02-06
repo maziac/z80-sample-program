@@ -6,13 +6,14 @@
             "request": "launch",
             "name": "Internal Simulator",
             "remoteType": "zsim",
-            //"remoteType": "zrcp",
-            //"remoteType": "cspect",
             "zsim": {
                 "visualMemory": "ZXNEXT",
                 "memoryModel": "ZXNEXT",
                 "ulaScreen": true,
-                "vsyncInterrupt": true
+                "zxBorderWidth": 20,
+                "vsyncInterrupt": true,
+                "zxKeyboard": true,
+                "zxBeeper": true
             },
             "sjasmplus": [
                 {
@@ -46,10 +47,6 @@
             "request": "launch",
             "name": "CSpect",
             "remoteType": "cspect",
-            "cspect": {
-                "hostname": "localhost",
-                "port": 11000,
-            },
             "sjasmplus": [
                 {
                     "path": "z80-sample-program.sld"
@@ -62,9 +59,7 @@
             "startAutomatically": false,
             "commandsAfterLaunch": [
                 "-logpoint enable",
-                "-assertion enable",
-                //"-sprites",
-                //"-patterns",
+                "-assertion enable"
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
@@ -82,11 +77,6 @@
             "request": "launch",
             "name": "ZEsarUX",
             "remoteType": "zrcp",
-            "zrcp": {
-                "hostname": "localhost",
-                "port": 10000,
-                //"socketTimeout": 50
-            },
             "sjasmplus": [
                 {
                     "path": "z80-sample-program.sld"
@@ -100,9 +90,7 @@
             "commandsAfterLaunch": [
                 "-logpoint enable",
                 "-assertion enable",
-                "-wpmem enable",
-                //"-sprites",
-                //"-patterns",
+                "-wpmem enable"
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
@@ -120,9 +108,6 @@
             "request": "launch",
             "name": "ZXNext",
             "remoteType": "zxnext",
-            "zxnext": {
-                //"port": 13000,
-            },
             "sjasmplus": [
                 {
                     "path": "z80-sample-program.sld"
