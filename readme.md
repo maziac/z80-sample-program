@@ -10,7 +10,7 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- [DeZog](https://github.com/maziac/DeZog) (>= v1.2.5)
+- [DeZog](https://github.com/maziac/DeZog) (>= v2.2.4)
 
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
 - the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v9.1)
