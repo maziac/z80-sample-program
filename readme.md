@@ -13,8 +13,8 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 - [DeZog](https://github.com/maziac/DeZog) (>= v1.2.5)
 
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
-- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v8.1)
-- the CSpect emulator, http://dailly.blogspot.com  (>= v2.12.26)
+- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v9.1)
+- the CSpect emulator, http://dailly.blogspot.com  (>= v2.13.01)
 
 If you want to build yourself (not required if you just want to test debugging): 
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus
