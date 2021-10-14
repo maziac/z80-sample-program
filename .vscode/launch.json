@@ -120,7 +120,7 @@
             "startAutomatically": false,
             "commandsAfterLaunch": [
                 "-logpoint enable",
-                "-assertion enable",
+                "-assertion enable"
             ],
             "disassemblerArgs": {
                 "esxdosRst": true
@@ -136,21 +136,31 @@
         {
             "type": "dezog",
             "request": "launch",
-            "name": "Unit Tests",
+            "name": "Unit Tests - Simulator",
             "unitTests": true,
+            "presentation": {
+                "hidden": true
+            },
             "remoteType": "zsim",
-            "disassemblerArgs": {
-                "esxdosRst": true
+            "zsim": {
+                "Z80N": true,
+                "visualMemory": true,
+                "memoryModel": "RAM"
             },
             "sjasmplus": [
                 {
-                    "path": "z80-sample-program.sld",
+                    "path": "z80-sample-program.sld"
                 }
             ],
+            "commandsAfterLaunch": [
+                "-logpoint enable",
+                "-assertion enable",
+                "-wpmem enable"
+            ],
+            "startAutomatically": true,
             "rootFolder": "${workspaceFolder}",
-            //"load": "z80-sample-program.sna",
-            "load": "z80-sample-program.nex",
-        },
+            "load": "z80-sample-program.nex"
+        }
 
     ]
 }

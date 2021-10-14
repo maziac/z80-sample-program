@@ -17,14 +17,14 @@ clear_screen:
     ld bc,SCREEN_SIZE
     ld hl,SCREEN
     call fill_memory
-    ret	
-    
+    ret
+
 
 ; Clears the background
 clear_backg:
     xor a
     call fill_backg
-    ret	
+    ret
 
 
 ; Fills the background with fore and background color.
@@ -33,7 +33,7 @@ fill_backg:
     ld bc,COLOR_SCREEN_SIZE
     ld hl,COLOR_SCREEN
     call fill_memory
-    ret	
-    
+    ret
 
-    
+
+

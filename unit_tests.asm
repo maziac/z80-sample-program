@@ -24,6 +24,8 @@
 
 ; A unit testcase needs to start with "UT_" (upper case letters).
 ; DeZog will collect all these labels and offer them for execution.
+
+; Tests that the screen is cleared/filled with 0's.
 UT_clear_screen:
     ; Write some bytes to the screen area
     ld a,0xFF
@@ -41,6 +43,7 @@ UT_clear_screen:
     TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE-1, 0
 
     TEST_MEMORY_BYTE SCREEN+SCREEN_SIZE, 0xFF
+    nop
  TC_END
 
 
