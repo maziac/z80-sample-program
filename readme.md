@@ -10,13 +10,13 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- [DeZog](https://github.com/maziac/DeZog) (>= v2.2.4)
+- [DeZog](https://github.com/maziac/DeZog) (>= v2.4.0)
 
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
-- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v9.1)
-- the CSpect emulator, http://dailly.blogspot.com  (>= v2.13.01)
+- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v9.2)
+- the CSpect emulator, http://dailly.blogspot.com  (>= v2.14.08)
 
-If you want to build yourself (not required if you just want to test debugging): 
+If you want to build the Z80 binary yourself (not required if you just want to test debugging):
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus
 
 
@@ -45,7 +45,7 @@ Now start the debug session by pressing the green arrow:
 ![](documentation/images/dbg_start_session.jpg)
 
 
-You should be left with a stopped program. 
+You should be left with a stopped program.
 ![](documentation/images/dbg_session_started.jpg)
 
 To the right you see the Z80 simulator. The black rectangle is the ZX Spectrum screen.
@@ -96,7 +96,7 @@ Now the following happens:
 5. vscode requests the 'CALL STACK' and the 'VARIABLES'
 6. call stack, disassembly and the registers values are requested from ZEsarUX.
 
-You should be left with a stopped program like before with the Z80 simulator. 
+You should be left with a stopped program like before with the Z80 simulator.
 
 From here you can:
 - step into, step over, step-out
@@ -128,7 +128,7 @@ Now the following happens:
 5. vscode requests the 'CALL STACK' and the 'VARIABLES'
 6. call stack, disassembly and the registers values are requested from CSpect.
 
-You should be left with a stopped program like before with the Z80 simulator. 
+You should be left with a stopped program like before with the Z80 simulator.
 
 From here you can:
 - step into, step over, step-out
