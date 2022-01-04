@@ -7,7 +7,7 @@
             "name": "Internal Simulator",
             "remoteType": "zsim",
             "zsim": {
-                "visualMemory": "ZXNEXT",
+                "visualMemory": true,
                 "memoryModel": "ZXNEXT",
                 "ulaScreen": true,
                 "zxBorderWidth": 20,
