@@ -1,0 +1,18 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "CSpect",
+        "DZRP",
+        "maziac",
+        "remoteprotocol",
+        "sjasmplus",
+        "ZEsarUX",
+        "ZRCP",
+        "zsim"
+    ],
+    "ignoreWords": [],
+    "import": []
+}
