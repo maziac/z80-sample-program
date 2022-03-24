@@ -142,10 +142,12 @@ From here you can:
 
 # Unit Tests
 
-The program also includes some unit tests to test the different memory fill subroutines.
-Details how to setup unit tests can be found [here](https://github.com/maziac/DeZog/blob/master/documentation/UnitTests.md).
+ The program also includes some unit tests to test the different memory fill subroutines.
+ DeZog (as of v2.4.0) includes the functionality to run the unit tests from the
+ vscode graphical UI (the test explorer).
 
-To run the unit test from a graphical UI (the test explorer) you additionally require the [z80-unit-tests](https://github.com/maziac/z80-unit-tests) extension.
+ Select the chemistry beaker icon on the left:
 
-![](documentation/images/unittest_test_explorer.jpg)
+ ![](documentation/images/unittest_test_explorer.jpg)
 
+ Further details how to setup unit tests can be found [here](https://github.com/maziac/DeZog/blob/master/documentation/UnitTests.md).
