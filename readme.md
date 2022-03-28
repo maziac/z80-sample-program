@@ -83,7 +83,7 @@ To debug the project first start ZEsarUx and enable the remote port (RCP) either
 The debug adapter uses the port 10000 which is ZEsarUX default, so you can leave this unchanged.
 
 When ZEsarUX is up and running start debugging from vscode.
-Select ZEsarUX and press the green arrow:
+Select ZEsarUX and press the green triangle:
 ![](documentation/images/dbg_select_zesarux.jpg)
 
 
@@ -106,7 +106,6 @@ From here you can:
 ![](documentation/images/zesarux_z80_sample_prg_run.gif)
 
 
-
 # Debug with CSpect
 
 To debug the project first start [CSpect](http://dailly.blogspot.com) together with the [DeZog/CSpect Plugin](https://github.com/maziac/DeZogPlugin).
@@ -115,7 +114,7 @@ The plugin DLL needs to be placed in the same direct as the CSpect.exe.
 Start CSpect from the console to verify that the DeZog/CSpect Plugin has started. You should see an output like "DeZog plugin started." followed by the port address the plugin is listening to.
 
 When CSpect is up and running start debugging from vscode.
-Select CSpect and press the green arrow:
+Select CSpect and press the green triangle:
 ![](documentation/images/dbg_select_cspect.jpg)
 
 Now the following happens:
@@ -152,10 +151,13 @@ The launch.json must be modified to contain the serial interface of your PC/Mac:
 ~~~
 
 For a list of serial ports available on your PC/Mac you can use the command palette (F1):
-[](documentation/images/cmd_list_all_com_ports.jpg)
+![](documentation/images/cmd_list_all_com_ports.jpg)
 
 Here is an example result (for a Mac):
-[](documentation/images/cmd_list_com_port_result.jpg)
+![](documentation/images/cmd_list_com_port_result.jpg)
+
+If everything is setup, start the ZXNext configuration (green triangle):
+![](documentation/images/dbg_select_zxnext.jpg)
 
 
 # Unit Tests
