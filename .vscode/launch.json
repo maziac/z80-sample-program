@@ -108,6 +108,9 @@
             "request": "launch",
             "name": "ZXNext",
             "remoteType": "zxnext",
+            "zxnext": {
+                "serial": "<add here your serial port>"
+            },
             "sjasmplus": [
                 {
                     "path": "z80-sample-program.sld"
