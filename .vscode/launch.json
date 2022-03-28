@@ -109,7 +109,7 @@
             "name": "ZXNext",
             "remoteType": "zxnext",
             "zxnext": {
-                "serial": "<add here your serial port>"
+                "serial": "/dev/tty.usbserial-AQ007PCD"
             },
             "sjasmplus": [
                 {
@@ -154,11 +154,6 @@
                 {
                     "path": "z80-sample-program.sld"
                 }
-            ],
-            "commandsAfterLaunch": [
-                "-logpoint enable",
-                "-assertion enable",
-                "-wpmem enable"
             ],
             "startAutomatically": true,
             "rootFolder": "${workspaceFolder}",
