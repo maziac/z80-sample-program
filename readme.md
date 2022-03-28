@@ -79,7 +79,7 @@ The action takes place in the 'main_loop':
 
 # Debug with ZEsarUX
 
-To debug the project first start ZEsarUx and enable the remote port (RCP) either by commandline (--enable-remoteprotocol) or from the UI ('Settings->Debug->Remote protocol' to 'Enabled').
+To debug the project first start ZEsarUx and enable the remote port (RCP) either by command line (--enable-remoteprotocol) or from the UI ('Settings->Debug->Remote protocol' to 'Enabled').
 The debug adapter uses the port 10000 which is ZEsarUX default, so you can leave this unchanged.
 
 When ZEsarUX is up and running start debugging from vscode.
@@ -89,12 +89,11 @@ Select ZEsarUX and press the green arrow:
 
 Now the following happens:
 
-1. A socket ZRCP connection is opened to ZEsarUX.
-2. The snapshot (z80-sample-program.sna) is loaded to ZEsarUX.
-3. The breakpoints are reset.
-4. The .list and .label files are read
-5. vscode requests the 'CALL STACK' and the 'VARIABLES'
-6. call stack, disassembly and the registers values are requested from ZEsarUX.
+1. A socket ZRCP connection is opened to ZEsarUX
+2. The snapshot (z80-sample-program.sna) is loaded to ZEsarUX
+3. The breakpoints are reset
+4. The .sld file is read
+5. vscode requests the 'CALL STACK' and the 'VARIABLES' from ZEsarUX
 
 You should be left with a stopped program like before with the Z80 simulator.
 
@@ -115,18 +114,18 @@ The plugin DLL needs to be placed in the same direct as the CSpect.exe.
 
 Start CSpect from the console to verify that the DeZog/CSpect Plugin has started. You should see an output like "DeZog plugin started." followed by the port address the plugin is listening to.
 
-When ZEsarUX is up and running start debugging from vscode.
-Select ZEsarUX and press the green arrow:
+When CSpect is up and running start debugging from vscode.
+Select CSpect and press the green arrow:
 ![](documentation/images/dbg_select_cspect.jpg)
 
 Now the following happens:
 
-1. A socket DZRP connection is opened to ZEsarUX.
-2. The snapshot (z80-sample-program.sna) is loaded to ZEsarUX.
+1. A socket DZRP connection is opened to CSpect
+2. The snapshot (z80-sample-program.sna) is loaded to CSpect
 3. The breakpoints are reset.
-4. The .list and .label files are read
-5. vscode requests the 'CALL STACK' and the 'VARIABLES'
-6. call stack, disassembly and the registers values are requested from CSpect.
+4. The .sld file is read
+5. vscode requests the 'CALL STACK' and the 'VARIABLES' from CSpect
+
 
 You should be left with a stopped program like before with the Z80 simulator.
 
@@ -138,6 +137,25 @@ From here you can:
 
 ![](documentation/images/cspect_z80_sample_prg_run.gif)
 
+
+# Debug with  ZX Next Computer
+
+To debug on a ZX Next you need serial cable to connect your PC/Mac with the ZX Next.
+There is also some setup required on the ZX Next.
+Please refer to the documentation in DeZog.
+
+The launch.json must be modified to contain the serial interface of your PC/Mac:
+~~~
+	"zxnext": {
+		"serial": "<your COM port>"
+	}
+~~~
+
+For a list of serial ports available on your PC/Mac you can use the command palette (F1):
+[](documentation/images/cmd_list_all_com_ports.jpg)
+
+Here is an example result (for a Mac):
+[](documentation/images/cmd_list_com_port_result.jpg)
 
 
 # Unit Tests
