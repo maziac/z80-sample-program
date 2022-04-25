@@ -117,7 +117,7 @@ stack_top:
         SAVESNA "z80-sample-program.sna", main
     ELSE
         SAVENEX OPEN "z80-sample-program.nex", main, stack_top
-        SAVENEX CORE 2, 0, 0        ; Next core 2.0.0 required as minimum
+        SAVENEX CORE 3, 1, 5
         SAVENEX CFG 7   ; Border color
         SAVENEX AUTO
         SAVENEX CLOSE
