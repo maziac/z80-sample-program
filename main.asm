@@ -64,7 +64,6 @@ main:
     call clear_backg
 
     ; Init
-lbl1:
     ld hl,fill_colors
     ld (fill_colors_ptr),hl
     ld de,COLOR_SCREEN
