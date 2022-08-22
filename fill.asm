@@ -73,7 +73,7 @@ inc_fill_colors_ptr:
 ; Pointer to fill colors.
 fill_colors_ptr:    defw 0
 
-; Contains the colors for the lines. Each entry represnts the color for one line.
+; Contains the colors for the lines. Each entry represents the color for one line.
 fill_colors:
     defb RED, YELLOW, BLUE, GREEN, MAGENTA
 fill_colors_end:
