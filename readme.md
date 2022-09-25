@@ -144,7 +144,7 @@ There is also some setup required on the ZX Next.
 Please refer to the documentation in DeZog.
 
 The launch.json must be modified to contain the serial interface of your PC/Mac:
-~~~
+~~~json
 	"zxnext": {
 		"serial": "<your COM port>"
 	}
