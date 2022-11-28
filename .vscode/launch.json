@@ -17,7 +17,7 @@
             },
             "sjasmplus": [
                 {
-                    "path": "z80-sample-program.sld"
+                 "path": "z80-sample-program.sld"
                 }
             ],
             "history": {
@@ -27,15 +27,39 @@
             },
             "startAutomatically": false,
             "commandsAfterLaunch": [
-                "-logpoint enable",
-                "-assertion enable",
-                "-wpmem enable"
             ],
-            "disassemblerArgs": {
-                "esxdosRst": true
-            },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
+            //"load": "z80-sample-program.sna",
+            "load": "z80-sample-program.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "Reverse Engineering",
+            "remoteType": "zsim",
+            "zsim": {
+                "visualMemory": true,
+                "memoryModel": "ZXNEXT",
+                "ulaScreen": true,
+                "zxBorderWidth": 20,
+                "vsyncInterrupt": true,
+                "zxKeyboard": true,
+                "zxBeeper": true
+            },
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10,
+                "codeCoverageEnabled": true
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+            ],
+            "rootFolder": "${workspaceFolder}",
+            //"topOfStack": "stack_top",
             //"load": "z80-sample-program.sna",
             "load": "z80-sample-program.nex",
             "smallValuesMaximum": 513,
@@ -58,12 +82,7 @@
             },
             "startAutomatically": false,
             "commandsAfterLaunch": [
-                "-logpoint enable",
-                "-assertion enable"
             ],
-            "disassemblerArgs": {
-                "esxdosRst": true
-            },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
             //"load": "z80-sample-program.sna",
@@ -88,13 +107,7 @@
             },
             "startAutomatically": false,
             "commandsAfterLaunch": [
-                "-logpoint enable",
-                "-assertion enable",
-                "-wpmem enable"
             ],
-            "disassemblerArgs": {
-                "esxdosRst": true
-            },
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
             //"load": "z80-sample-program.sna",
@@ -109,7 +122,7 @@
             "name": "ZXNext",
             "remoteType": "zxnext",
             "zxnext": {
-                "serial": "/dev/tty.usbserial-AQ007PCD"
+                "serial": "/dev/cu.usbserial-AQ007PCD"
             },
             "sjasmplus": [
                 {
@@ -121,17 +134,33 @@
                 "spotCount": 10
             },
             "startAutomatically": false,
-            "commandsAfterLaunch": [
-                "-logpoint enable",
-                "-assertion enable"
-            ],
-            "disassemblerArgs": {
-                "esxdosRst": true
-            },
+            "commandsAfterLaunch": [],
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "stack_top",
             //"load": "z80-sample-program.sna",
             "load": "z80-sample-program.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "MAME",
+            "remoteType": "mame",
+            "mame": {
+                "port": 12000
+            },
+            "sjasmplus": [
+                {
+                    "path": "z80-sample-program.sld"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "stack_top",
+            "load": "z80-sample-program.sna",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
         },
