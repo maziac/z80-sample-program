@@ -12,10 +12,7 @@
             ],
             "problemMatcher": {
                 "owner": "sjasmplus",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceRoot}"
-                ],
+                "fileLocation": "autoDetect",
                 "pattern": {
                     "regexp": "^(.*)\\((\\d+)\\):\\s+(warning|error):\\s+(.*)$",
                     "file": 1,
