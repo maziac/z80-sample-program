@@ -15,7 +15,7 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
 - the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (known to work: v10.2)
 - the CSpect emulator, http://dailly.blogspot.com  (known to work: v2.16.6)
-- MAME, https://www.mamedev.org (known to work: v0.248)
+- MAME, https://www.mamedev.org (known to work: v0.242)
 
 You can also run it on a "real" [ZX Spectrum Next](https://www.specnext.com) computer.
 
@@ -145,23 +145,25 @@ Note: DeZog uses a CSpect dll (DeZogPlugin.dll) for communication. In the past t
 
 # Debug with MAME
 
-To debug the project first start [CSpect](http://dailly.blogspot.com) together with the [DeZog/CSpect Plugin](https://github.com/maziac/DeZogPlugin).
-The plugin DLL needs to be placed in the same direct as the CSpect.exe.
+[MAME](https://www.mamedev.org) (as of version 0.242) does only support 1 connection. A 2nd connection attempt is refused.
+This does not mean concurrent connection, it means: only 1 connection per session.
+Therefore MAME needs to be terminated after each debug session.
+DeZog sends MAME a kill command when the session is terminated.
+The best debug experience at the moment is to re-start MAME in a loop, e.g. on linux/macOS use:
+~~~bash
+while true; do ./mame spectrum -window -debugger gdbstub -debug -debugger_port 12000 -verbose  -resolution 1024x768 ; sleep 2 ; done
+~~~
 
-Start CSpect from the console to verify that the DeZog/CSpect Plugin has started. You should see an output like "DeZog plugin started." followed by the port address the plugin is listening to.
-
-When CSpect is up and running start debugging from vscode.
-Select CSpect and press the green triangle:
+MAME already loads the Spectrum ROM during startup. The z80-sample-program is transferred by DeZog to MAME as soon as the debug session is started with:
 ![](documentation/images/dbg_select_cspect.jpg)
 
-Now the following happens:
+The sequence of actions is similar to CSpect:
 
-1. A socket DZRP connection is opened to CSpect
-2. The snapshot (z80-sample-program.sna) is loaded to CSpect
+1. A socket connection is opened to MAME (for transferring gdb commands)
+2. The snapshot (z80-sample-program.sna) is loaded to MAME (Please note that for MAME only ZX48K sna files do work, no ZX128K files and o .nex files will work.)
 3. The breakpoints are reset.
 4. The .sld file is read
-5. vscode requests the 'CALL STACK' and the 'VARIABLES' from CSpect
-
+5. vscode requests the 'CALL STACK' and the 'VARIABLES' from MAME
 
 You should be left with a stopped program like before with the Z80 simulator.
 
@@ -171,7 +173,9 @@ From here you can:
 - hover over register in the asm file: It will show the values and also (if available) the corresponding labels.
 - change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
 
-![](documentation/images/cspect_z80_sample_prg_run.gif)
+![](documentation/images/mame_z80_sample_prg_run.gif)
+
+Note the wrong border color. This is because "load" (to load the sna file) does not support setting the border for MAME. I.e. to work correctly the program would have to set the border by itself.
 
 
 # Debug with a ZX Next Computer
