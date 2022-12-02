@@ -10,14 +10,17 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- [DeZog](https://github.com/maziac/DeZog) (>= v2.4.0)
+- [DeZog](https://github.com/maziac/DeZog) (>= v3.0.0)
 
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
-- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (>= v9.2)
-- the CSpect emulator, http://dailly.blogspot.com  (>= v2.14.08)
+- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (known to work: v10.2)
+- the CSpect emulator, http://dailly.blogspot.com  (known to work: v2.16.6)
+- MAME, https://www.mamedev.org (known to work: v0.248)
+
+You can also run it on a "real" [ZX Spectrum Next](https://www.specnext.com) computer.
 
 If you want to build the Z80 binary yourself (not required if you just want to test debugging):
-- Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus
+- Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus (known to work: v1.19).
 
 
 # Building
@@ -27,16 +30,16 @@ The binaries are included in this repository so that you could also directly sta
 
 However, if you would like to do some changes you need to compile.
 From the menu choose "Terminal->Run Build Task..."
-tasks.json is configured such that it will call sjasmplus with the required parameters.
+tasks.json is configured such that it will call sjasmplus with the required parameters. (Please note that you probably have to adjust the path to sjasmplus.)
 
 There are several .asm files which are all included in the main.asm file. This file is the one being assembled.
 
-After the build is ready a z80-sample-program.sna file is created which can be used with ZEsarUX.
+After the build is ready a z80-sample-program.sna file is created which can be used with the internal simulator, ZEsarUX, CSpect or MAME.
 
 
 # Running the Debugger with the Internal Z80 Simulator
 
-The project comes with 3 configurations. one for ZEsarUX, one for the internal Z80 simulator and one for Z80 unit tests.
+The project comes with 6 configurations. One for the internal Z80 simulator,one for ZEsarUX, one for CSpect, one for MAME and one for the unit tests.
 
 Choose the Z80 simulator first:
 ![](documentation/images/dbg_select_zsim.jpg)
@@ -58,7 +61,9 @@ From here you can:
 - change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
 
 The internal Z80 simulator does allow only basic Z80 or ZX 48K/128K debugging and is slow.
-For real emulation and other features (like ZXNext HW emulation) setup [ZEsarUX](#debug-with-zesarux).
+For real emulation and other features (like ZXNext HW emulation) setup [ZEsarUX](#debug-with-zesarux), [CSpect](#debug-with-cspect) or [MAME](#debug-with-mame).
+
+You can even [debug on a "real" ZX Next](#debug-with-a-zx-next-computer) if you like.
 
 
 # The Program Itself
@@ -71,8 +76,8 @@ The program is only for educational purposes. It does nothing more than drawing 
 It does so by manipulating the color screen area (0x5800).
 
 The action takes place in the 'main_loop':
-1. it draws a one color line
-2. it waits for half a second
+1. it draws one colored line
+2. it waits for a few moments
 3. it proceeds to the next line
 4. loop from 1
 
@@ -80,7 +85,7 @@ The action takes place in the 'main_loop':
 # Debug with ZEsarUX
 
 To debug the project first start ZEsarUx and enable the remote port (RCP) either by command line (--enable-remoteprotocol) or from the UI ('Settings->Debug->Remote protocol' to 'Enabled').
-The debug adapter uses the port 10000 which is ZEsarUX default, so you can leave this unchanged.
+DeZog uses the port 10000 which is ZEsarUX default, so you can leave this unchanged.
 
 When ZEsarUX is up and running start debugging from vscode.
 Select ZEsarUX and press the green triangle:
@@ -107,6 +112,38 @@ From here you can:
 
 
 # Debug with CSpect
+
+To debug the project first start [CSpect](http://dailly.blogspot.com).
+
+Start CSpect from the console to verify that the DeZog/CSpect Plugin has started. You should see an output like "DeZog plugin started." followed by the port address the plugin is listening to.
+
+When CSpect is up and running start debugging from vscode.
+Select CSpect and press the green triangle:
+![](documentation/images/dbg_select_cspect.jpg)
+
+Now the following happens:
+
+1. A socket DZRP connection is opened to CSpect
+2. The snapshot (z80-sample-program.sna) is loaded to CSpect
+3. The breakpoints are reset.
+4. The .sld file is read
+5. vscode requests the 'CALL STACK' and the 'VARIABLES' from CSpect
+
+
+You should be left with a stopped program like before with the Z80 simulator.
+
+From here you can:
+- step into, step over, step-out
+- click on the call stack: It will navigate directly to the asm file.
+- hover over register in the asm file: It will show the values and also (if available) the corresponding labels.
+- change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
+
+![](documentation/images/cspect_z80_sample_prg_run.gif)
+
+Note: DeZog uses a CSpect dll (DeZogPlugin.dll) for communication. In the past this was a separate program, nowadays it comes bundled with CSpect and is automatically started with CSpect.
+
+
+# Debug with MAME
 
 To debug the project first start [CSpect](http://dailly.blogspot.com) together with the [DeZog/CSpect Plugin](https://github.com/maziac/DeZogPlugin).
 The plugin DLL needs to be placed in the same direct as the CSpect.exe.
@@ -137,7 +174,7 @@ From here you can:
 ![](documentation/images/cspect_z80_sample_prg_run.gif)
 
 
-# Debug with  ZX Next Computer
+# Debug with a ZX Next Computer
 
 To debug on a ZX Next you need serial cable to connect your PC/Mac with the ZX Next.
 There is also some setup required on the ZX Next.
@@ -163,6 +200,8 @@ If everything is setup, start the ZXNext configuration (green triangle):
 # Unit Tests
 
  The program also includes some unit tests to test the different memory fill subroutines.
+ This configuration is hidden, i.e. you can't select it like the others in the vscode UI.
+ But it is there in launch.json and it is used for executing and debugging the unit tests.
  DeZog (as of v2.4.0) includes the functionality to run the unit tests from the
  vscode graphical UI (the test explorer).
 
