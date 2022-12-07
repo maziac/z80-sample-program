@@ -13,7 +13,7 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 - [DeZog](https://github.com/maziac/DeZog) (>= v3.0.0)
 
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
-- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (known to work: v10.2)
+- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (known to work: v10.1, note: 10.2 is unfortunately incompatible)
 - the CSpect emulator, http://dailly.blogspot.com  (known to work: v2.16.6)
 - MAME, https://www.mamedev.org (known to work: v0.242)
 
