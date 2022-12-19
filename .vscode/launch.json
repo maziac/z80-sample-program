@@ -147,7 +147,7 @@
             "zsim": {
                 "Z80N": true,
                 "visualMemory": true,
-                "memoryModel": "RAM"
+                "memoryModel": "ZXNEXT"
             },
             "sjasmplus": [
                 {
