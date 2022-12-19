@@ -82,6 +82,19 @@ The action takes place in the 'main_loop':
 4. loop from 1
 
 
+# Start emulator from vscode
+
+The z80-sample-program includes a .vscode/tasks.json that contains tasks to start, ZEsarUX, CSpect or MAME.
+
+But before using, please adopt the path(s) under "cwd" to the right path on your machine.
+
+The emulator has to be started before entering a debug session with DeZog.
+Normally you have to start an emulator only once to open/close several debugger session on it.
+Just in case something is going wrong you need to restart the emulator.
+
+An exception is the MAME emulator. It has to be restarted for every debug session. The tasks.json task already takes care of restarting.
+
+
 # Debug with ZEsarUX
 
 To debug the project first start ZEsarUx and enable the remote port (RCP) either by command line (--enable-remoteprotocol) or from the UI ('Settings->Debug->Remote protocol' to 'Enabled').
@@ -177,6 +190,8 @@ From here you can:
 
 Note the wrong border color. This is because "load" (to load the sna file) does not support setting the border for MAME. I.e. to work correctly the program would have to set the border by itself.
 
+MAME does not emulate the ZX Next, i.e. you cannot upload a .nex file. Use .sna in this case.
+
 
 # Debug with a ZX Next Computer
 
@@ -206,7 +221,7 @@ If everything is setup, start the ZXNext configuration (green triangle):
  The program also includes some unit tests to test the different memory fill subroutines.
  This configuration is hidden, i.e. you can't select it like the others in the vscode UI.
  But it is there in launch.json and it is used for executing and debugging the unit tests.
- DeZog (as of v2.4.0) includes the functionality to run the unit tests from the
+ DeZog includes the functionality to run the unit tests from the
  vscode graphical UI (the test explorer).
 
  Select the chemistry beaker icon on the left:
