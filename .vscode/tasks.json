@@ -42,27 +42,26 @@
                 "--esxdos-root-dir", "."    // Set ESXDOS root directory
             ],
             "options": {
-                "cwd": "change_to_your_path",   // Please change the path to the zesarux executable
+                "cwd": "${config:zesarux_dir}",
             },
             "problemMatcher": []
         },
 
-
         {
             "label": "start cspect",
             "type": "shell",
-            "command": "mono",  // For windows users: Remove 'mono' and add 'CSpect.exe' instead
+            "command": "mono", // For windows users: Remove 'mono' and add 'CSpect.exe' instead
             "args": [
-                "CSpect.exe",   // For windows users: remove this entry
-                "-w4",      // Window size
-                "-zxnext",  // Use zxnext HW registers
-                "-mmc=./",  // Enable RST 8, emulate SW card at director ./  (the trailing slash is important)
-                "-tv",      // Disable TV shader
-                "-r",       // Remember window settings
-                "-debug"    // Start up in (CSpect) debugger
+                "CSpect.exe", // For windows users: remove this entry
+                "-w4", // Window size
+                "-zxnext", // Use zxnext HW registers
+                "-mmc=./", // Enable RST 8, emulate SW card at director ./  (the trailing slash is important)
+                "-tv", // Disable TV shader
+                "-r", // Remember window settings
+                "-debug" // Start up in (CSpect) debugger
             ],
             "options": {
-                "cwd": "change_to_your_path", // Please change the path to the CSpect.exe executable
+                "cwd": "${config:cspect_dir}",
             },
             "problemMatcher": []
         },
@@ -72,7 +71,7 @@
             "type": "shell",
             "command": "while true; do ./mame spectrum -window -debugger gdbstub -debug -debugger_port 12000 -verbose -resolution 512x384 ; sleep 2 ; done", // For windows users: please exchange this with e.g. powershell commands
             "options": {
-                "cwd": "change_to_your_path", // Please change the path to the mame executable
+                "cwd": "${config:mame_dir}"
             },
             "problemMatcher": []
         }

@@ -82,11 +82,21 @@ The action takes place in the 'main_loop':
 4. loop from 1
 
 
-# Start emulator from vscode
+# Start emulators from vscode
 
 The z80-sample-program includes a .vscode/tasks.json that contains tasks to start, ZEsarUX, CSpect or MAME.
 
-But before using, please adopt the path(s) under "cwd" to the right path on your machine.
+But before using, please adopt the paths under "cwd" to the right path on your machine.
+You can either directly change the paths in the tasks.json or you create a settings.json in the same folder and set the configuration parameters to your paths, e.g.:
+settings.json:
+~~~json
+{
+	"zesarux_dir": "/.../ZEsarUX10.1.app/Contents/MacOS",
+	"cspect_dir": "/.../CSpect/CSpect2_16_6",
+	"mame_dir": "/.../Projects/mame"
+}
+~~~
+This should work for macos and Windows.
 
 The emulator has to be started before entering a debug session with DeZog.
 Normally you have to start an emulator only once to open/close several debugger session on it.
