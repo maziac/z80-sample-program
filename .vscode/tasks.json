@@ -44,11 +44,7 @@
             "options": {
                 "cwd": "change_to_your_path",   // Please change the path
             },
-            "problemMatcher": {
-                "pattern": {
-                    "regexp": "",
-                }
-            }
+            "problemMatcher": []
         },
 
 
@@ -68,11 +64,7 @@
             "options": {
                 "cwd": "change_to_your_path", // Please change the path
             },
-            "problemMatcher": {
-                "pattern": {
-                    "regexp": "",
-                }
-            }
+            "problemMatcher": []
         },
 
         {
@@ -82,11 +74,7 @@
             "options": {
                 "cwd": "change_to_your_path", // Please change the path
             },
-            "problemMatcher": {
-                "pattern": {
-                    "regexp": "",
-                }
-            }
+            "problemMatcher": []
         }
     ]
 }
