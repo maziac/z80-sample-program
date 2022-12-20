@@ -42,7 +42,7 @@
                 "--esxdos-root-dir", "."    // Set ESXDOS root directory
             ],
             "options": {
-                "cwd": "change_to_your_path",   // Please change the path
+                "cwd": "change_to_your_path",   // Please change the path to the zesarux executable
             },
             "problemMatcher": []
         },
@@ -62,7 +62,7 @@
                 "-debug"    // Start up in (CSpect) debugger
             ],
             "options": {
-                "cwd": "change_to_your_path", // Please change the path
+                "cwd": "change_to_your_path", // Please change the path to the CSpect.exe executable
             },
             "problemMatcher": []
         },
@@ -72,7 +72,7 @@
             "type": "shell",
             "command": "while true; do ./mame spectrum -window -debugger gdbstub -debug -debugger_port 12000 -verbose -resolution 512x384 ; sleep 2 ; done", // For windows users: please exchange this with e.g. powershell commands
             "options": {
-                "cwd": "change_to_your_path", // Please change the path
+                "cwd": "change_to_your_path", // Please change the path to the mame executable
             },
             "problemMatcher": []
         }
