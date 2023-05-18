@@ -92,7 +92,7 @@
             "name": "ZXNext",
             "remoteType": "zxnext",
             "zxnext": {
-                "serial": "/dev/cu.usbserial-AQ007PCD"
+                "serial": "/dev/tty.usbserial-AQ007PCD"
             },
             "sjasmplus": [
                 {
@@ -138,7 +138,7 @@
         {
             "type": "dezog",
             "request": "launch",
-            "name": "Unit Tests - Simulator",
+            "name": "Unit Tests",
             "unitTests": true,
             "presentation": {
                 "hidden": true
