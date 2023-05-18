@@ -10,17 +10,17 @@ The intention is to use this as a kind of tutorial for [DeZog (Z80 debugger)](ht
 # Prerequisites
 
 - Visual Studio Code (vscode)
-- [DeZog](https://github.com/maziac/DeZog) (>= v3.0.0)
+- [DeZog](https://github.com/maziac/DeZog) (>= v3.3.0)
 
 The program runs in the internal Z80 simulator but you can **optionally** run it on another emulator:
-- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (known to work: v10.1, note: 10.2 is unfortunately incompatible at the moment)
-- the CSpect emulator, http://dailly.blogspot.com  (known to work: v2.16.6)
+- the ZEsarUX emulator, https://github.com/chernandezba/zesarux  (known to work: v10.3, note: previous version will not work anymore with DeZog 3.3)
+- the CSpect emulator, http://dailly.blogspot.com  (known to work: v2.19.3.0)
 - MAME, https://www.mamedev.org (known to work: v0.242)
 
 You can also run it on a "real" [ZX Spectrum Next](https://www.specnext.com) computer.
 
 If you want to build the Z80 binary yourself (not required if you just want to test debugging):
-- Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus (known to work: v1.19).
+- Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus (known to work: v1.20.2).
 
 
 # Building
