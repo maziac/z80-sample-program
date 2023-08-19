@@ -44,6 +44,7 @@
             "options": {
                 "cwd": "${config:zesarux_dir}",
             },
+            "detail": "zesarux --noconfigfile --machine tbblue --tbblue-fast-boot-mode --snap-no-change-machine --enable-esxdos-handler --enable-remoteprotocol --disable-autoframeskip --esxdos-root-dir .",
             "problemMatcher": []
         },
 
