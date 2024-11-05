@@ -7,17 +7,12 @@
             "name": "Internal Simulator",
             "remoteType": "zsim",
             "zsim": {
-                "visualMemory": true,
-                "memoryModel": "ZXNEXT",
-                "ulaScreen": true,
-                "zxBorderWidth": 20,
-                "vsyncInterrupt": true,
-                "zxKeyboard": true,
-                "zxBeeper": true
+                "preset": "spectrum",
+                "memoryModel": "ZXNEXT"
             },
             "sjasmplus": [
                 {
-                 "path": "z80-sample-program.sld"
+                    "path": "z80-sample-program.sld"
                 }
             ],
             "history": {

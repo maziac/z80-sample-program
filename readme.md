@@ -39,7 +39,7 @@ After the build is ready a z80-sample-program.sna file is created which can be u
 
 # Running the Debugger with the Internal Z80 Simulator
 
-The project comes with 6 configurations. One for the internal Z80 simulator,one for ZEsarUX, one for CSpect, one for MAME and one for the unit tests.
+The project comes with 6 configurations. One for the internal Z80 simulator, one for ZEsarUX, one for CSpect, one for MAME and one for the unit tests.
 
 Choose the Z80 simulator first:
 ![](documentation/images/dbg_select_zsim.jpg)
@@ -60,7 +60,7 @@ From here you can:
 - hover over register in the asm file: It will show the values and also (if available) the corresponding labels.
 - change register values: a double click on the value of a register in the REGISTER area will allow you to enter a different value.
 
-The internal Z80 simulator does allow only basic Z80 or ZX 48K/128K debugging and is slow.
+The internal Z80 simulator (zsim) allows basic Z80, ZX 48K/128K and ZX81 debugging.
 For real emulation and other features (like ZXNext HW emulation) setup [ZEsarUX](#debug-with-zesarux), [CSpect](#debug-with-cspect) or [MAME](#debug-with-mame).
 
 You can even [debug on a "real" ZX Next](#debug-with-a-zx-next-computer) if you like.
