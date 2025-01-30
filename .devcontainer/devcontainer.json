@@ -1,0 +1,20 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "features": {
+    },
+    // Run Bash script in .devcontainer directory to install sjasmplus
+    "postCreateCommand": "/bin/bash ./.devcontainer/post-create.sh > ~/post-create.log",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bierner.github-markdown-preview",
+                "maziac.asm-code-lens",
+                "maziac.dezog",
+                "maziac.hex-hover-converter",
+                "maziac.z80-instruction-set",
+                "maziac.sna-fileviewer",
+                "maziac.nex-fileviewer"
+            ]
+        }
+    }
+}
