@@ -13,7 +13,8 @@
                 "maziac.hex-hover-converter",
                 "maziac.z80-instruction-set",
                 "maziac.sna-fileviewer",
-                "maziac.nex-fileviewer"
+                "maziac.nex-fileviewer",
+                "maziac.zx81-bastop"
             ]
         }
     }
