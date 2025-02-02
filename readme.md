@@ -23,6 +23,12 @@ If you want to build the Z80 binary yourself (not required if you just want to t
 - Z80 Assembler: sjasmplus, https://github.com/z00m128/sjasmplus (known to work: v1.20.2).
 
 
+# GitHub Codespaces
+This repository has Codespaces enabled.
+I.e. to try out DeZog and the sample Z80/ZX Spectrum program you don't need to install vscode, sjasmplus or even DeZog:
+If you have a github account you can simply open a codespace with everything pre-installed:
+![](documentation/images/codespaces_create.jpg)
+
 # Building
 
 First if you just want to test debugging with the 'DeZog' extension there is no need to build/assemble the required files.
