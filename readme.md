@@ -40,7 +40,10 @@ tasks.json is configured such that it will call sjasmplus with the required para
 
 There are several .asm files which are all included in the main.asm file. This file is the one being assembled.
 
-After the build is ready a z80-sample-program.sna file is created which can be used with the internal simulator, ZEsarUX, CSpect or MAME.
+After the build is ready `z80-sample-program.nex` file is created. If you want to create a _.sna_ file set `NEX: equ 0` in _main.asm_ (line 7). 
+
+_.sld_ file is also created (see args in the sjasmplus task in .vscode/tasks.json) .sld is used by the debugger.
+The binary files (.nex, .sna) can be used with the internal simulator, ZEsarUX, CSpect or MAME.
 
 
 # Running the Debugger with the Internal Z80 Simulator
