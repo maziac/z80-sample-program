@@ -14,8 +14,7 @@ NEX:    equ 1   ;  1=Create nex file, 0=create sna file
         DEVICE ZXSPECTRUMNEXT
     ENDIF
 
-    ORG 0x4000
-    defs 0x6000 - $    ; move after screen area
+    ORG 0x6000
 screen_top: defb    0   ; WPMEMx
 
 
