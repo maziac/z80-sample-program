@@ -75,6 +75,9 @@ For real emulation and other features (like ZXNext HW emulation) setup [ZEsarUX]
 You can even [debug on a "real" ZX Next](#debug-with-a-zx-next-computer) if you like.
 
 
+**NB**: if you cannot set debug breakpoints in VSCode go to Settings>User>Features>Debug and check the checkbox _Allow setting breakpoints in any file_.
+
+
 # The Program Itself
 
 The program is only for educational purposes. It does nothing more than drawing colored lines on the screen.
