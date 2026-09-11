@@ -75,7 +75,11 @@ For real emulation and other features (like ZXNext HW emulation) setup [ZEsarUX]
 You can even [debug on a "real" ZX Next](#debug-with-a-zx-next-computer) if you like.
 
 
-**NB**: if you cannot set debug breakpoints in VSCode go to Settings>User>Features>Debug and check the checkbox _Allow setting breakpoints in any file_.
+**NB**: if you cannot set debug breakpoints in VSCode you probably installed _(n)asm-code-lens_ in parallel with _DeZog_. 
+
+asm-code-lens checks your *.asm files and by default associates them with the nasm assembler (which is an x86 assembler). To fix breakpoints go to the settings and look for _asm-code-lens_. Set the assembler to **sjasmplus** (in the user settings).
+
+Alternatively you can check the checkbox _Allow setting breakpoints in any file_ in Settings>User>Features>Debug but this is like fighting the symptoms and not fixing the problem.
 
 
 # The Program Itself
